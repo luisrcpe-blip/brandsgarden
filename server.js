@@ -3,6 +3,7 @@ const session = require('express-session');
 const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
+const pool = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,82 +24,34 @@ app.use(session({
     cookie: { maxAge: 1000 * 60 * 60 * 8 } // 8 horas
 }));
 
-// ─── BASE DE DATOS PERSISTENTE (JSON) ──────────────────────
-const DB_DIR = path.join(__dirname, 'database');
-if (!fs.existsSync(DB_DIR)) {
-    fs.mkdirSync(DB_DIR, { recursive: true });
-}
-
-const PRODUCTS_FILE = path.join(DB_DIR, 'products.json');
-const ORDERS_FILE = path.join(DB_DIR, 'orders.json');
-const CONFIG_FILE = path.join(DB_DIR, 'config.json');
-const USERS_FILE = path.join(DB_DIR, 'users.json');
-const LOGS_FILE = path.join(DB_DIR, 'activity_log.json');
-
-function loadJSON(file, defaultValue) {
+// ─── UTILIDADES SQL ───────────────────────────────────────
+async function addLog(req, action, details) {
     try {
-        // Migración automática: si el archivo no está en /database/ pero sí en la raíz
-        const filename = path.basename(file);
-        const rootFile = path.join(__dirname, filename);
-        
-        if (!fs.existsSync(file) && fs.existsSync(rootFile)) {
-            console.log(`📦 Migrando ${filename} a la zona protegida...`);
-            fs.copyFileSync(rootFile, file);
-            // No borramos la raíz por seguridad extrema, pero el servidor usará /database/
-        }
-
-        if (!fs.existsSync(file)) {
-            fs.writeFileSync(file, JSON.stringify(defaultValue, null, 2));
-            return defaultValue;
-        }
-        return JSON.parse(fs.readFileSync(file, 'utf8'));
+        const usuario = req.session.adminEmail || 'Sistema';
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        await pool.query(
+            'INSERT INTO logs (usuario, ip, accion, detalles) VALUES (?, ?, ?, ?)',
+            [usuario, ip, action, JSON.stringify(details)]
+        );
     } catch (e) {
-        console.error(`Error cargando ${file}:`, e);
-        return defaultValue;
+        console.error("Error en addLog SQL:", e);
     }
 }
 
-function saveJSON(file, data) {
+async function getConfig() {
     try {
-        // Backup antes de guardar
-        if (fs.existsSync(file)) {
-            fs.copyFileSync(file, file + '.bak');
-        }
-        fs.writeFileSync(file, JSON.stringify(data, null, 2));
-    } catch (e) {
-        console.error(`Error guardando ${file}:`, e);
-    }
-}
-
-function addLog(req, action, details) {
-    try {
-        const logs = loadJSON(LOGS_FILE, []);
-        const entry = {
-            fecha: new Date().toLocaleString('es-PE', { timeZone: 'America/Lima' }),
-            isoDate: new Date().toISOString(),
-            usuario: req.session.adminEmail || 'Sistema',
-            ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
-            accion: action,
-            detalles: details
+        const [rows] = await pool.query('SELECT * FROM configuracion');
+        const config = {};
+        rows.forEach(r => config[r.clave] = r.valor);
+        // Valores por defecto si no existen
+        return {
+            envioBase: parseFloat(config.envioBase) || 15,
+            nombreTienda: config.nombreTienda || 'Brandsgarden'
         };
-        logs.push(entry);
-        // Mantener solo los últimos 1000 logs para no saturar
-        if (logs.length > 1000) logs.shift();
-        saveJSON(LOGS_FILE, logs);
     } catch (e) {
-        console.error("Error en addLog:", e);
+        return { envioBase: 15, nombreTienda: 'Brandsgarden' };
     }
 }
-
-// Cargar datos iniciales
-let users = loadJSON(USERS_FILE, [{ email: 'jeffrc.pe@gmail.com', password: 'BrandsGarden2026', isAdmin: true }]);
-let productos = loadJSON(PRODUCTS_FILE, []);
-let pedidos = loadJSON(ORDERS_FILE, []);
-let configuracion = loadJSON(CONFIG_FILE, { envioBase: 15, nombreTienda: 'Brandsgarden' });
-
-// IDs auto-incrementales
-let nextProductoId = productos.length > 0 ? Math.max(...productos.map(p => p.id)) + 1 : 1;
-let nextPedidoId = pedidos.length > 0 ? Math.max(...pedidos.map(p => p.id)) + 1 : 1001;
 
 function requireAdmin(req, res, next) {
     if (req.session && req.session.isAdmin) return next();
@@ -107,30 +60,39 @@ function requireAdmin(req, res, next) {
 }
 
 // ─── API: AUTH ───────────────────────────────────────────
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
-    const user = users.find(u => u.email === email && u.password === password);
-    if (user) {
-        req.session.isAdmin = user.isAdmin;
-        req.session.adminEmail = user.email;
-        req.session.user = { email: user.email, isAdmin: user.isAdmin };
-        // Si es admin, llevar a la web (landing) con el botón especial
-        return res.json({ ok: true, redirect: '/perfumes/' });
+    try {
+        const [rows] = await pool.query('SELECT * FROM usuarios WHERE email = ? AND password = ?', [email, password]);
+        if (rows.length > 0) {
+            const user = rows[0];
+            req.session.isAdmin = !!user.is_admin;
+            req.session.adminEmail = user.email;
+            req.session.user = { email: user.email, isAdmin: !!user.is_admin };
+            return res.json({ ok: true, redirect: '/perfumes/' });
+        }
+        res.status(401).json({ ok: false, error: 'Credenciales inválidas' });
+    } catch (e) {
+        res.status(500).json({ error: 'Error en el servidor' });
     }
-    res.status(401).json({ ok: false, error: 'Credenciales inválidas' });
 });
 
-app.post('/api/register', (req, res) => {
+app.post('/api/register', async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Datos incompletos' });
-    if (users.find(u => u.email === email)) return res.status(400).json({ error: 'El usuario ya existe' });
-    const nuevo = { email, password, isAdmin: false };
-    users.push(nuevo);
-    saveJSON(USERS_FILE, users);
-    req.session.isAdmin = false;
-    req.session.adminEmail = email;
-    req.session.user = { email, isAdmin: false };
-    res.status(201).json({ ok: true, redirect: '/perfumes/' });
+    try {
+        const [exists] = await pool.query('SELECT email FROM usuarios WHERE email = ?', [email]);
+        if (exists.length > 0) return res.status(400).json({ error: 'El usuario ya existe' });
+        
+        await pool.query('INSERT INTO usuarios (email, password, is_admin) VALUES (?, ?, ?)', [email, password, false]);
+        
+        req.session.isAdmin = false;
+        req.session.adminEmail = email;
+        req.session.user = { email, isAdmin: false };
+        res.status(201).json({ ok: true, redirect: '/perfumes/' });
+    } catch (e) {
+        res.status(500).json({ error: 'Error en registro' });
+    }
 });
 
 app.get('/api/me', (req, res) => {
@@ -144,126 +106,155 @@ app.get('/api/logout', (req, res) => {
 });
 
 // ─── API: PRODUCTOS (WooCommerce Compat & Admin) ──────────
-app.get('/wp-json/wc/store/products', (req, res) => {
-    const mapped = productos.map(p => ({
-        id: p.id,
-        name: p.nombre,
-        prices: { price: (p.precio * 100).toString(), currency_code: 'PEN' },
-        description: p.descripcion,
-        short_description: p.descCorta,
-        images: p.imagen ? [{ src: p.imagen, thumbnail: p.imagen }] : [],
-        is_purchasable: true,
-        is_in_stock: p.stock > 0,
-        stock_quantity: p.stock,
-        categories: [{ name: p.categoria }]
-    }));
-    res.set('X-WP-Total', productos.length.toString());
-    res.json(mapped);
-});
-
-app.get('/api/productos', (req, res) => res.json(productos));
-
-app.post('/api/productos', requireAdmin, (req, res) => {
-    const { nombre, categoria, stock, precio, imagen, descCorta, descripcion, sku } = req.body;
-    const nuevo = { 
-        id: nextProductoId++, 
-        nombre, 
-        categoria: categoria || 'Perfumes', 
-        stock: parseInt(stock) || 0, 
-        precio: parseFloat(precio) || 0, 
-        imagen: imagen || '',
-        descCorta: descCorta || '',
-        descripcion: descripcion || '',
-        sku: sku || ''
-    };
-    productos.push(nuevo);
-    saveJSON(PRODUCTS_FILE, productos);
-    addLog(req, 'CREAR_PRODUCTO', { id: nuevo.id, nombre: nuevo.nombre, sku: nuevo.sku });
-    res.status(201).json(nuevo);
-});
-
-app.put('/api/productos/:id', requireAdmin, (req, res) => {
-    const id = parseInt(req.params.id);
-    const idx = productos.findIndex(p => p.id === id);
-    if (idx === -1) return res.status(404).json({ error: 'No encontrado' });
-    const { nombre, categoria, stock, precio, imagen, descCorta, descripcion, sku } = req.body;
-    productos[idx] = { 
-        ...productos[idx], 
-        nombre, 
-        categoria, 
-        stock: parseInt(stock), 
-        precio: parseFloat(precio), 
-        imagen, 
-        descCorta, 
-        descripcion, 
-        sku: sku || '',
-        id 
-    };
-    saveJSON(PRODUCTS_FILE, productos);
-    addLog(req, 'EDITAR_PRODUCTO', { id, nombre, sku });
-    res.json(productos[idx]);
-});
-
-app.delete('/api/productos/:id', requireAdmin, (req, res) => {
-    const id = parseInt(req.params.id);
-    const prod = productos.find(p => p.id === id);
-    if (prod) {
-        addLog(req, 'ELIMINAR_PRODUCTO', { id, datosCompletos: prod });
-        productos = productos.filter(p => p.id !== id);
-        saveJSON(PRODUCTS_FILE, productos);
+app.get('/wp-json/wc/store/products', async (req, res) => {
+    try {
+        const [productos] = await pool.query('SELECT * FROM productos');
+        const mapped = productos.map(p => ({
+            id: p.id,
+            name: p.nombre,
+            prices: { price: (p.precio * 100).toString(), currency_code: 'PEN' },
+            description: p.descripcion,
+            short_description: p.desc_corta,
+            images: p.imagen ? [{ src: p.imagen, thumbnail: p.imagen }] : [],
+            is_purchasable: true,
+            is_in_stock: p.stock > 0,
+            stock_quantity: p.stock,
+            categories: [{ name: p.categoria }]
+        }));
+        res.set('X-WP-Total', productos.length.toString());
+        res.json(mapped);
+    } catch (e) {
+        res.status(500).json([]);
     }
-    res.json({ ok: true });
+});
+
+app.get('/api/productos', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT * FROM productos');
+        res.json(rows);
+    } catch (e) {
+        res.status(500).json([]);
+    }
+});
+
+app.post('/api/productos', requireAdmin, async (req, res) => {
+    const { nombre, categoria, stock, precio, imagen, descCorta, descripcion, sku } = req.body;
+    try {
+        const [result] = await pool.query(
+            'INSERT INTO productos (nombre, categoria, stock, precio, imagen, desc_corta, descripcion, sku) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [nombre, categoria || 'Perfumes', parseInt(stock) || 0, parseFloat(precio) || 0, imagen || '', descCorta || '', descripcion || '', sku || '']
+        );
+        const nuevo = { id: result.insertId, ...req.body };
+        await addLog(req, 'CREAR_PRODUCTO', { id: result.insertId, nombre, sku });
+        res.status(201).json(nuevo);
+    } catch (e) {
+        res.status(500).json({ error: 'Error al crear producto' });
+    }
+});
+
+app.put('/api/productos/:id', requireAdmin, async (req, res) => {
+    const id = parseInt(req.params.id);
+    const { nombre, categoria, stock, precio, imagen, descCorta, descripcion, sku } = req.body;
+    try {
+        await pool.query(
+            'UPDATE productos SET nombre=?, categoria=?, stock=?, precio=?, imagen=?, desc_corta=?, descripcion=?, sku=? WHERE id=?',
+            [nombre, categoria, parseInt(stock), parseFloat(precio), imagen, descCorta, descripcion, sku || '', id]
+        );
+        await addLog(req, 'EDITAR_PRODUCTO', { id, nombre, sku });
+        res.json({ id, ...req.body });
+    } catch (e) {
+        res.status(500).json({ error: 'Error al editar producto' });
+    }
+});
+
+app.delete('/api/productos/:id', requireAdmin, async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        const [rows] = await pool.query('SELECT * FROM productos WHERE id = ?', [id]);
+        if (rows.length > 0) {
+            await addLog(req, 'ELIMINAR_PRODUCTO', { id, datosCompletos: rows[0] });
+            await pool.query('DELETE FROM productos WHERE id = ?', [id]);
+        }
+        res.json({ ok: true });
+    } catch (e) {
+        res.status(500).json({ error: 'Error al eliminar producto' });
+    }
 });
 
 // ─── API: PEDIDOS ─────────────────────────────────────────
-app.get('/api/pedidos', (req, res) => {
-    if (req.query.telefono) return res.json(pedidos.filter(p => p.telefono === req.query.telefono));
-    if (req.session.isAdmin) return res.json(pedidos);
-    res.status(401).json({ error: 'No autorizado' });
+app.get('/api/pedidos', async (req, res) => {
+    try {
+        if (req.query.telefono) {
+            const [rows] = await pool.query('SELECT * FROM pedidos WHERE telefono = ? ORDER BY id DESC', [req.query.telefono]);
+            return res.json(rows);
+        }
+        if (req.session.isAdmin) {
+            const [rows] = await pool.query('SELECT * FROM pedidos ORDER BY id DESC');
+            for (let p of rows) {
+                const [items] = await pool.query('SELECT * FROM pedido_items WHERE pedido_id = ?', [p.id]);
+                p.productos = items;
+            }
+            return res.json(rows);
+        }
+        res.status(401).json({ error: 'No autorizado' });
+    } catch (e) {
+        res.status(500).json([]);
+    }
 });
 
-app.put('/api/pedidos/:id/estado', requireAdmin, (req, res) => {
-    const pedido = pedidos.find(p => p.id === parseInt(req.params.id));
-    if (pedido) {
-        const estadoAnterior = pedido.estado;
-        pedido.estado = req.body.estado;
-        saveJSON(ORDERS_FILE, pedidos);
-        addLog(req, 'CAMBIO_ESTADO_PEDIDO', { id: pedido.id, de: estadoAnterior, a: pedido.estado });
+app.put('/api/pedidos/:id/estado', requireAdmin, async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        const [rows] = await pool.query('SELECT estado FROM pedidos WHERE id = ?', [id]);
+        if (rows.length > 0) {
+            const estadoAnterior = rows[0].estado;
+            await pool.query('UPDATE pedidos SET estado = ? WHERE id = ?', [req.body.estado, id]);
+            await addLog(req, 'CAMBIO_ESTADO_PEDIDO', { id, de: estadoAnterior, a: req.body.estado });
+            res.json({ id, estado: req.body.estado });
+        } else {
+            res.status(404).json({ error: 'No encontrado' });
+        }
+    } catch (e) {
+        res.status(500).json({ error: 'Error' });
     }
-    res.json(pedido);
 });
 
 // ─── AJAX COMPATIBILITY (Landing Page Orders) ─────────────
-app.all('/wp-admin/admin-ajax.php', (req, res) => {
+app.all('/wp-admin/admin-ajax.php', async (req, res) => {
     const action = req.query.action || req.body.action;
     if (action === 'sll_create_order') {
-        const { first_name, email, phone, address, items, shipping_total, district, department } = req.body;
+        const { first_name, email, phone, address, items, shipping_total, district, department, dni } = req.body;
         
-        const subtotal = (items || []).reduce((sum, item) => {
-            const prod = productos.find(p => p.id === parseInt(item.id));
-            return sum + (prod ? prod.precio * item.quantity : 0);
-        }, 0);
-        const envio = parseFloat(shipping_total) || 15;
+        try {
+            let subtotal = 0;
+            for (const item of (items || [])) {
+                const [pRows] = await pool.query('SELECT precio FROM productos WHERE id = ?', [parseInt(item.id)]);
+                if (pRows.length > 0) subtotal += pRows[0].precio * item.quantity;
+            }
+            const envio = parseFloat(shipping_total) || 15;
 
-        const nuevo = {
-            id: nextPedidoId++,
-            cliente: first_name,
-            telefono: phone,
-            email: email || '',
-            direccion: `${address || ''} (${district || ''}, ${department || ''})`,
-            productos: (items || []).map(it => {
-                const p = productos.find(x => x.id === parseInt(it.id));
-                return { nombre: p ? p.nombre : `Prod #${it.id}`, cantidad: it.quantity, precio: p ? p.precio : 0 };
-            }),
-            subtotal,
-            envio,
-            total: subtotal + envio,
-            estado: 'Preparando',
-            fecha: new Date().toISOString().split('T')[0]
-        };
-        pedidos.push(nuevo);
-        saveJSON(ORDERS_FILE, pedidos);
-        return res.json({ success: true, data: { redirect_url: '/perfumes/gracias.html', order_id: nuevo.id } });
+            const [result] = await pool.query(
+                'INSERT INTO pedidos (cliente, dni, telefono, email, direccion, distrito, departmento, subtotal, envio, total, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [first_name, dni || '', phone, email || '', address || '', district || '', department || '', subtotal, envio, subtotal + envio, 'Preparando']
+            );
+
+            const pedidoId = result.insertId;
+
+            for (const item of (items || [])) {
+                const [pRows] = await pool.query('SELECT nombre, precio FROM productos WHERE id = ?', [parseInt(item.id)]);
+                const nombre = pRows.length > 0 ? pRows[0].nombre : `Prod #${item.id}`;
+                const precio = pRows.length > 0 ? pRows[0].precio : 0;
+                await pool.query(
+                    'INSERT INTO pedido_items (pedido_id, nombre, cantidad, precio) VALUES (?, ?, ?, ?)',
+                    [pedidoId, nombre, item.quantity, precio]
+                );
+            }
+
+            return res.json({ success: true, data: { redirect_url: '/perfumes/gracias.html', order_id: pedidoId } });
+        } catch (e) {
+            console.error("Error creando pedido SQL:", e);
+            return res.status(500).json({ success: false, data: { message: 'Error interno' } });
+        }
     }
     res.status(404).json({ success: false, data: { message: 'Acción no reconocida' } });
 });
@@ -290,37 +281,57 @@ app.get('/api/media', requireAdmin, (req, res) => {
 });
 
 // ─── API: CLIENTES (CRM) ──────────────────────────────────
-app.get('/api/clientes', requireAdmin, (req, res) => {
-    const cMap = {};
-    pedidos.forEach(p => {
-        if (!cMap[p.telefono]) cMap[p.telefono] = { nombre: p.cliente, telefono: p.telefono, totalGastado: 0, numeroPedidos: 0, ultimoPedido: p.fecha };
-        cMap[p.telefono].totalGastado += p.total;
-        cMap[p.telefono].numeroPedidos++;
-        if (p.fecha > cMap[p.telefono].ultimoPedido) cMap[p.telefono].ultimoPedido = p.fecha;
-    });
-    res.json(Object.values(cMap));
+app.get('/api/clientes', requireAdmin, async (req, res) => {
+    try {
+        const [rows] = await pool.query(`
+            SELECT 
+                cliente as nombre, 
+                telefono, 
+                dni,
+                email,
+                SUM(total) as totalGastado, 
+                COUNT(*) as numeroPedidos, 
+                MAX(fecha_creacion) as ultimoPedido 
+            FROM pedidos 
+            GROUP BY telefono, dni, cliente, email
+        `);
+        res.json(rows);
+    } catch (e) {
+        res.status(500).json([]);
+    }
 });
 
 // ─── API: LOGS (AUDITORIA) ───────────────────────────────
-app.get('/api/logs', requireAdmin, (req, res) => {
-    const logs = loadJSON(LOGS_FILE, []);
-    res.json(logs.reverse()); // Los más recientes primero
+app.get('/api/logs', requireAdmin, async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT * FROM logs ORDER BY id DESC LIMIT 500');
+        res.json(rows);
+    } catch (e) {
+        res.status(500).json([]);
+    }
 });
 
 // ─── API: CONFIG ──────────────────────────────────────────
-app.get('/api/config', (req, res) => res.json(configuracion));
-app.put('/api/config', requireAdmin, (req, res) => {
-    configuracion = { ...configuracion, ...req.body };
-    saveJSON(CONFIG_FILE, configuracion);
-    addLog(req, 'EDITAR_CONFIG', req.body);
-    res.json(configuracion);
+app.get('/api/config', async (req, res) => {
+    const config = await getConfig();
+    res.json(config);
+});
+
+app.put('/api/config', requireAdmin, async (req, res) => {
+    try {
+        for (const [clave, valor] of Object.entries(req.body)) {
+            await pool.query('REPLACE INTO configuracion (clave, valor) VALUES (?, ?)', [clave, valor.toString()]);
+        }
+        await addLog(req, 'EDITAR_CONFIG', req.body);
+        res.json({ ok: true });
+    } catch (e) {
+        res.status(500).json({ error: 'Error' });
+    }
 });
 
 // ─── RUTAS FRONTEND ───────────────────────────────────────
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public/admin/login.html')));
-
 app.get('/perfumes/index.html', (req, res) => res.redirect(301, '/perfumes/'));
-
 app.get('/admin', (req, res) => req.session.isAdmin ? res.redirect('/admin/dashboard') : res.sendFile(path.join(__dirname, 'public/admin/login.html')));
 app.get('/admin/dashboard', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/dashboard.html')));
 app.get('/admin/productos', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/productos.html')));
@@ -333,6 +344,6 @@ app.get('/perfil', (req, res) => res.sendFile(path.join(__dirname, 'public/perfi
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.listen(PORT, () => {
-    console.log(`✅ Server: http://localhost:${PORT}`);
+    console.log(`✅ Server MySQL: http://localhost:${PORT}`);
     console.log(`📦 Admin: http://localhost:${PORT}/admin`);
 });
