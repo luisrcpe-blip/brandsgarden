@@ -124,7 +124,7 @@ app.get('/wp-json/wc/store/products', (req, res) => {
 app.get('/api/productos', (req, res) => res.json(productos));
 
 app.post('/api/productos', requireAdmin, (req, res) => {
-    const { nombre, categoria, stock, precio, imagen, descCorta, descripcion } = req.body;
+    const { nombre, categoria, stock, precio, imagen, descCorta, descripcion, sku } = req.body;
     const nuevo = { 
         id: nextProductoId++, 
         nombre, 
@@ -133,7 +133,8 @@ app.post('/api/productos', requireAdmin, (req, res) => {
         precio: parseFloat(precio) || 0, 
         imagen: imagen || '',
         descCorta: descCorta || '',
-        descripcion: descripcion || ''
+        descripcion: descripcion || '',
+        sku: sku || ''
     };
     productos.push(nuevo);
     saveJSON(PRODUCTS_FILE, productos);
@@ -144,7 +145,19 @@ app.put('/api/productos/:id', requireAdmin, (req, res) => {
     const id = parseInt(req.params.id);
     const idx = productos.findIndex(p => p.id === id);
     if (idx === -1) return res.status(404).json({ error: 'No encontrado' });
-    productos[idx] = { ...productos[idx], ...req.body, id };
+    const { nombre, categoria, stock, precio, imagen, descCorta, descripcion, sku } = req.body;
+    productos[idx] = { 
+        ...productos[idx], 
+        nombre, 
+        categoria, 
+        stock: parseInt(stock), 
+        precio: parseFloat(precio), 
+        imagen, 
+        descCorta, 
+        descripcion, 
+        sku: sku || '',
+        id 
+    };
     saveJSON(PRODUCTS_FILE, productos);
     res.json(productos[idx]);
 });
