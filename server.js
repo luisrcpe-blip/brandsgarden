@@ -109,6 +109,16 @@ app.get('/api/logout', (req, res) => {
     res.redirect('/admin');
 });
 
+app.get('/api/debug-env', (req, res) => {
+    res.json({
+        DB_HOST: process.env.DB_HOST ? 'Configurado' : 'FALTA',
+        DB_USER: process.env.DB_USER ? 'Configurado' : 'FALTA',
+        DB_PASSWORD: process.env.DB_PASSWORD ? 'Configurado' : 'FALTA',
+        DB_NAME: process.env.DB_NAME ? 'Configurado' : 'FALTA',
+        NODE_ENV: process.env.NODE_ENV || 'not set'
+    });
+});
+
 // ─── API: PRODUCTOS (WooCommerce Compat & Admin) ──────────
 app.get('/wp-json/wc/store/products', async (req, res) => {
     try {
