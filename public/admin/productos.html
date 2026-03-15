@@ -2,60 +2,284 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Productos - Brandsgarden Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
-  :root{--green:#1A472A;--green-light:#e8f5e9;--text:#2d2d2d;--gray:#6b7280;--border:#e5e7eb;--bg:#f4f7f4}
+  :root{--green:#1A472A;--green-light:#e8f5e9;--green-mid:#0C9145;--text:#2d2d2d;--gray:#6b7280;--border:#e5e7eb;--bg:#f4f7f4}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
   .sidebar{position:fixed;top:0;left:0;height:100vh;width:220px;background:var(--green);display:flex;flex-direction:column;padding:24px 0;z-index:100}
-  .sidebar-logo{padding:24px;border-bottom:1px solid rgba(255,255,255,.1)}
-  .sidebar-logo h2{color:#fff;font-family:'Outfit'}
-  .nav-item{display:flex;align-items:center;gap:12px;padding:12px 24px;color:rgba(255,255,255,.75);text-decoration:none}
-  .nav-item.active{background:rgba(255,255,255,.1);color:#fff}
-  .main{margin-left:220px;padding:32px}
-  .page-header{display:flex;justify-content:space-between;margin-bottom:32px}
+  .sidebar-logo{padding:0 24px 24px;border-bottom:1px solid rgba(255,255,255,.1)}
+  .sidebar-logo h2{font-family:'Outfit',sans-serif;color:#fff;font-size:1.3rem;font-weight:800}
+  .sidebar-logo p{color:rgba(255,255,255,.6);font-size:.75rem;margin-top:2px}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:12px 24px;color:rgba(255,255,255,.75);text-decoration:none;font-weight:500;font-size:.95rem;transition:.2s}
+  .nav-item:hover,.nav-item.active{background:rgba(255,255,255,.1);color:#fff}
+  .nav-item .icon{font-size:1.2rem;width:20px;text-align:center}
+  .nav-bottom{margin-top:auto;border-top:1px solid rgba(255,255,255,.1);padding-top:8px}
+  .main{margin-left:220px;padding:32px;min-height:100vh}
+  .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
+  .page-title{font-family:'Outfit',sans-serif;font-size:1.8rem;color:var(--green);font-weight:800}
+  .btn-add{background:linear-gradient(135deg,#0C9145,#1A472A);color:#fff;border:none;border-radius:12px;padding:12px 22px;font-size:.95rem;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;transition:.2s}
+  .btn-add:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(12,145,69,.3)}
   .section{background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
   table{width:100%;border-collapse:collapse}
-  th{text-align:left;padding:12px;border-bottom:2px solid var(--border)}
-  td{padding:12px;border-bottom:1px solid var(--border)}
-  .btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
-  .btn-add{background:var(--green);color:#fff}
+  th{text-align:left;font-size:.8rem;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;padding:0 12px 12px;border-bottom:2px solid var(--border)}
+  td{padding:14px 12px;border-bottom:1px solid var(--border);font-size:.9rem;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  .stock-ok{color:#065f46;font-weight:700}
+  .stock-low{color:#dc2626;font-weight:700}
+  .stock-zero{color:#dc2626;font-weight:700;text-decoration:line-through}
+  .btn-sm{padding:6px 14px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:.2s}
+  .btn-edit{background:#e8f5e9;color:var(--green)}
+  .btn-edit:hover{background:#c8e6c9}
+  .btn-del{background:#fee2e2;color:#dc2626}
+  .btn-del:hover{background:#fecaca}
+  .loading{text-align:center;color:var(--gray);padding:40px}
+  /* MODAL */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center}
+  .overlay.open{display:flex}
+  .modal{background:#fff;border-radius:20px;padding:32px;width:100%;max-width:440px;box-shadow:0 20px 50px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto}
+  .modal h3{font-family:'Outfit',sans-serif;color:var(--green);font-size:1.3rem;font-weight:800;margin-bottom:20px}
+  .form-group{margin-bottom:16px}
+  .form-group label{display:block;font-weight:600;font-size:.85rem;color:#374151;margin-bottom:5px}
+  .form-group input,.form-group select{width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:10px;font-size:.95rem;font-family:'DM Sans',sans-serif;outline:none;transition:.2s}
+  .form-group input:focus,.form-group select:focus{border-color:var(--green)}
+  .modal-btns{display:flex;gap:10px;margin-top:20px}
+  .btn-save{flex:1;padding:12px;background:linear-gradient(135deg,#0C9145,#1A472A);color:#fff;border:none;border-radius:10px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;font-size:.95rem}
+  .btn-cancel{flex:1;padding:12px;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;font-size:.95rem}
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); transition: transform 0.3s; width: 260px; z-index: 300 }
+    .sidebar.open { transform: translateX(0) }
+    .main { margin-left: 0; padding: 20px }
+    /* Mobile Table Scroll */
+    .table-container { overflow-x: auto }
+    table { min-width: 600px }
+    .page-header { flex-direction: column; align-items: flex-start; gap: 16px }
+    .btn-add { width: 100% }
+  }
 </style>
 </head>
 <body>
-<aside class="sidebar">
-  <div class="sidebar-logo"><h2>🌿 Brandsgarden</h2></div>
-  <a class="nav-item" href="/admin/dashboard">📊 Resumen</a>
-  <a class="nav-item" href="/admin/pedidos">🛒 Pedidos</a>
-  <a class="nav-item active" href="/admin/productos">📦 Productos</a>
-  <a class="nav-item" href="/admin/clientes">👥 Clientes</a>
-  <a class="nav-item" href="/admin/configuracion">⚙️ Configuración</a>
-  <div class="nav-bottom"><a class="nav-item" href="/admin/logout">🚪 Cerrar sesión</a></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <h2>🌿 Brandsgarden</h2>
+      <button onclick="document.getElementById('sidebar').classList.remove('open')" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;display:none" id="close-menu-btn">✖</button>
+    </div>
+    <p>Panel Administrativo</p>
+  </div>
+  <a class="nav-item" href="/admin/dashboard"><span class="icon">📊</span>Resumen</a>
+  <a class="nav-item" href="/admin/pedidos"><span class="icon">🛒</span>Pedidos</a>
+  <a class="nav-item active" href="/admin/productos"><span class="icon">📦</span>Productos</a>
+  <a class="nav-item" href="/admin/clientes"><span class="icon">👥</span>Clientes</a>
+  <a class="nav-item" href="/admin/configuracion"><span class="icon">⚙️</span>Configuración</a>
+  <div class="nav-bottom">
+    <a class="nav-item" href="/admin/logout"><span class="icon">🚪</span>Cerrar sesión</a>
+  </div>
 </aside>
+
 <main class="main">
-  <div class="page-header"><h1>Gestión de Productos</h1><button class="btn btn-add" onclick="alert('Se abrirá modal de nuevo producto')">+ Nuevo</button></div>
+  <div class="page-header">
+    <div style="display:flex;align-items:center;gap:16px">
+      <button onclick="document.getElementById('sidebar').classList.add('open')" style="display:none;background:none;border:none;font-size:1.5rem;cursor:pointer" id="menu-btn">☰</button>
+      <div>
+        <h1 class="page-title">Gestión de Productos</h1>
+        <p id="total-count-badge" style="color:var(--gray); font-size:0.9rem; font-weight:600;">Total: 0 productos</p>
+      </div>
+    </div>
+    <div style="display:flex; gap:12px; align-items:center;">
+      <div style="position:relative;">
+        <input type="text" id="admin-search" placeholder="🔍 Buscar producto..." style="padding:10px 15px 10px 35px; border-radius:10px; border:2px solid var(--border); width:250px; outline:none; font-family:'DM Sans',sans-serif;">
+      </div>
+      <select id="admin-sort" style="padding:10px; border-radius:10px; border:2px solid var(--border); outline:none; font-family:'DM Sans',sans-serif; cursor:pointer;">
+        <option value="name-asc">Nombre (A-Z)</option>
+        <option value="name-desc">Nombre (Z-A)</option>
+        <option value="price-asc">Precio (Menor a Mayor)</option>
+        <option value="price-desc">Precio (Mayor a Menor)</option>
+        <option value="stock-asc">Stock (Menor a Mayor)</option>
+        <option value="stock-desc">Stock (Mayor a Menor)</option>
+      </select>
+      <button class="btn-add" onclick="openModal()">+ Nuevo</button>
+    </div>
+  </div>
   <div class="section">
-    <table>
-      <thead><tr><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Stock</th></tr></thead>
-      <tbody id="prod-body"></tbody>
-    </table>
+    <div id="productos-container"><div class="loading">⏳ Cargando productos...</div></div>
   </div>
 </main>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <h3 id="modal-title">Nuevo Producto</h3>
+    <input type="hidden" id="edit-id">
+    <div class="form-group">
+      <label>Nombre del Producto</label>
+      <input type="text" id="f-nombre" placeholder="Ej: Hugo Boss Bottled 100ml">
+    </div>
+    <div class="form-group">
+      <label>Categoría</label>
+      <select id="f-categoria">
+        <option>Perfumes</option>
+        <option>Mochilas</option>
+        <option>Carteras</option>
+        <option>Otros</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Precio (S/)</label>
+      <input type="number" id="f-precio" placeholder="0.00" min="0" step="0.01">
+    </div>
+    <div class="form-group">
+      <label>Stock (unidades)</label>
+      <input type="number" id="f-stock" placeholder="0" min="0">
+    </div>
+    <div class="form-group">
+      <label>Imagen del Producto</label>
+      <div style="display:flex; gap:10px;">
+        <input type="text" id="f-imagen" placeholder="URL o seleccionar de la galería" style="flex:1" readonly>
+        <button type="button" class="btn-cancel" style="padding: 11px 16px; margin: 0; flex: 0 0 auto;" onclick="openGallery()">🏞️ Galería</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Descripción Corta (Meta)</label>
+      <input type="text" id="f-desc-corta" placeholder="Ej: Inspirado en Creed Aventus">
+    </div>
+    <div class="form-group">
+      <label>Descripción Completa</label>
+      <textarea id="f-descripcion" rows="4" style="width:100%; padding:11px 14px; border:2px solid var(--border); border-radius:10px; font-size:.95rem; font-family:'DM Sans',sans-serif; outline:none; transition:.2s" placeholder="Historia del perfume, notas, etc."></textarea>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="guardarProducto()">Guardar ✓</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  async function load(){
+  if(window.innerWidth <= 900) { document.getElementById('menu-btn').style.display = 'block'; }
+  let products = [];
+
+  async function cargarProductos() {
     const res = await fetch('/api/productos');
-    const data = await res.json();
-    document.getElementById('prod-body').innerHTML = data.map(p=>`
-      <tr>
-        <td><strong>${p.nombre}</strong></td>
-        <td>${p.categoria}</td>
-        <td>S/ ${p.precio.toFixed(2)}</td>
-        <td>${p.stock}</td>
-      </tr>
-    `).join('');
+    if (res.status === 401) { window.location.href = '/admin'; return; }
+    products = await res.json();
+    updateBadge();
+    renderTabla();
   }
-  load();
+
+  function updateBadge() {
+    document.getElementById('total-count-badge').textContent = `Total: ${products.length} productos`;
+  }
+
+  function renderTabla() {
+    const container = document.getElementById('productos-container');
+    const searchTerm = document.getElementById('admin-search').value.toLowerCase();
+    const sortBy = document.getElementById('admin-sort').value;
+
+    let filtered = products.filter(p => 
+      p.nombre.toLowerCase().includes(searchTerm) || 
+      p.categoria.toLowerCase().includes(searchTerm) ||
+      (p.descCorta && p.descCorta.toLowerCase().includes(searchTerm))
+    );
+
+    filtered.sort((a, b) => {
+      if (sortBy === 'name-asc') return a.nombre.localeCompare(b.nombre);
+      if (sortBy === 'name-desc') return b.nombre.localeCompare(a.nombre);
+      if (sortBy === 'price-asc') return a.precio - b.precio;
+      if (sortBy === 'price-desc') return b.precio - a.precio;
+      if (sortBy === 'stock-asc') return a.stock - b.stock;
+      if (sortBy === 'stock-desc') return b.stock - a.stock;
+      return 0;
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = `<div class="loading">📭 ${products.length === 0 ? 'No hay productos. ¡Agrega uno!' : 'No se encontraron productos con esa búsqueda.'}</div>`; return;
+    }
+    const rows = filtered.map(p => {
+      let stockClass = p.stock > 3 ? 'stock-ok' : (p.stock > 0 ? 'stock-low' : 'stock-zero');
+      let stockText = p.stock === 0 ? 'Sin stock' : p.stock;
+      let imgHtml = p.imagen ? `<img src="${p.imagen}" style="width:32px;height:32px;border-radius:6px;object-fit:cover;vertical-align:middle;margin-right:8px">` : '';
+      return `<tr class="pedido-row">
+        <td><div style="display:flex;align-items:center">${imgHtml}<strong>${p.nombre}</strong></div></td>
+        <td>${p.categoria}</td>
+        <td>S/ ${parseFloat(p.precio).toFixed(2)}</td>
+        <td class="${stockClass}">${stockText}</td>
+        <td>
+          <button class="btn-sm btn-edit" onclick="editarProducto(${p.id})">✏️ Editar</button>
+          &nbsp;
+          <button class="btn-sm btn-del" onclick="eliminarProducto(${p.id})">🗑️</button>
+        </td>
+      </tr>`;
+    }).join('');
+    container.innerHTML = `<div class="table-container"><table>
+      <thead><tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+  }
+
+  function openModal(reset=true) {
+    if(reset){
+      document.getElementById('modal-title').textContent = 'Nuevo Producto';
+      document.getElementById('edit-id').value = '';
+      document.getElementById('f-nombre').value = '';
+      document.getElementById('f-categoria').value = 'Perfumes';
+      document.getElementById('f-precio').value = '';
+      document.getElementById('f-stock').value = '';
+      document.getElementById('f-imagen').value = '';
+      document.getElementById('f-desc-corta').value = '';
+      document.getElementById('f-descripcion').value = '';
+    }
+    document.getElementById('overlay').classList.add('open');
+  }
+
+  function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+  function closeModalOutside(e) { if(e.target === document.getElementById('overlay')) closeModal(); }
+
+  function editarProducto(id) {
+    const p = products.find(x => x.id === id);
+    if(!p) return;
+    document.getElementById('modal-title').textContent = 'Editar Producto';
+    document.getElementById('edit-id').value = p.id;
+    document.getElementById('f-nombre').value = p.nombre;
+    document.getElementById('f-categoria').value = p.categoria;
+    document.getElementById('f-precio').value = p.precio;
+    document.getElementById('f-stock').value = p.stock;
+    document.getElementById('f-imagen').value = p.imagen || '';
+    document.getElementById('f-desc-corta').value = p.descCorta || '';
+    document.getElementById('f-descripcion').value = p.descripcion || '';
+    openModal(false);
+  }
+
+  async function guardarProducto() {
+    const id = document.getElementById('edit-id').value;
+    const body = {
+      nombre: document.getElementById('f-nombre').value,
+      categoria: document.getElementById('f-categoria').value,
+      precio: parseFloat(document.getElementById('f-precio').value),
+      stock: parseInt(document.getElementById('f-stock').value),
+      imagen: document.getElementById('f-imagen').value,
+      descCorta: document.getElementById('f-desc-corta').value,
+      descripcion: document.getElementById('f-descripcion').value,
+    };
+    if (!body.nombre || isNaN(body.precio)) { alert('Completa nombre y precio'); return; }
+    const url = id ? `/api/productos/${id}` : '/api/productos';
+    const method = id ? 'PUT' : 'POST';
+    const res = await fetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    if (res.ok) { closeModal(); cargarProductos(); }
+    else { alert('Error al guardar'); }
+  }
+
+  async function eliminarProducto(id) {
+    if (!confirm('¿Eliminar este producto?')) return;
+    await fetch(`/api/productos/${id}`, { method: 'DELETE' });
+    cargarProductos();
+  }
+
+  cargarProductos();
 </script>
 </body>
 </html>
