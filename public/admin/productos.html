@@ -85,9 +85,24 @@
       <button onclick="document.getElementById('sidebar').classList.add('open')" style="display:none;background:none;border:none;font-size:1.5rem;cursor:pointer" id="menu-btn">☰</button>
       <div>
         <h1 class="page-title">Gestión de Productos</h1>
+        <p id="total-count-badge" style="color:var(--gray); font-size:0.9rem; font-weight:600;">Total: 0 productos</p>
       </div>
     </div>
-    <button class="btn-add" onclick="openModal()">+ Nuevo Producto</button>
+    <div style="display:flex; gap:12px; align-items:center;">
+      <div style="position:relative;">
+        <input type="text" id="admin-search" placeholder="🔍 Buscar producto..." style="padding:10px 15px 10px 35px; border-radius:10px; border:2px solid var(--border); width:250px; outline:none; font-family:'DM Sans',sans-serif;">
+        <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--gray);"></span>
+      </div>
+      <select id="admin-sort" style="padding:10px; border-radius:10px; border:2px solid var(--border); outline:none; font-family:'DM Sans',sans-serif; cursor:pointer;">
+        <option value="name-asc">Nombre (A-Z)</option>
+        <option value="name-desc">Nombre (Z-A)</option>
+        <option value="price-asc">Precio (Menor a Mayor)</option>
+        <option value="price-desc">Precio (Mayor a Menor)</option>
+        <option value="stock-asc">Stock (Menor a Mayor)</option>
+        <option value="stock-desc">Stock (Mayor a Menor)</option>
+      </select>
+      <button class="btn-add" onclick="openModal()">+ Nuevo</button>
+    </div>
   </div>
   <div class="section">
     <div id="productos-container"><div class="loading">⏳ Cargando productos...</div></div>
@@ -158,34 +173,58 @@
     const res = await fetch('/api/productos');
     if (res.status === 401) { window.location.href = '/admin'; return; }
     products = await res.json();
+    updateBadge();
     renderTabla();
+  }
+
+  function updateBadge() {
+    document.getElementById('total-count-badge').textContent = `Total: \${products.length} productos`;
   }
 
   function renderTabla() {
     const container = document.getElementById('productos-container');
-    if (products.length === 0) {
-      container.innerHTML = '<div class="loading">📭 No hay productos. ¡Agrega uno!</div>'; return;
+    const searchTerm = document.getElementById('admin-search').value.toLowerCase();
+    const sortBy = document.getElementById('admin-sort').value;
+
+    let filtered = products.filter(p => 
+      p.nombre.toLowerCase().includes(searchTerm) || 
+      p.categoria.toLowerCase().includes(searchTerm) ||
+      (p.descCorta && p.descCorta.toLowerCase().includes(searchTerm))
+    );
+
+    filtered.sort((a, b) => {
+      if (sortBy === 'name-asc') return a.nombre.localeCompare(b.nombre);
+      if (sortBy === 'name-desc') return b.nombre.localeCompare(a.nombre);
+      if (sortBy === 'price-asc') return a.precio - b.precio;
+      if (sortBy === 'price-desc') return b.precio - a.precio;
+      if (sortBy === 'stock-asc') return a.stock - b.stock;
+      if (sortBy === 'stock-desc') return b.stock - a.stock;
+      return 0;
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = \`<div class="loading">📭 \${products.length === 0 ? 'No hay productos. ¡Agrega uno!' : 'No se encontraron productos con esa búsqueda.'}</div>\`; return;
     }
-    const rows = products.map(p => {
+    const rows = filtered.map(p => {
       let stockClass = p.stock > 3 ? 'stock-ok' : (p.stock > 0 ? 'stock-low' : 'stock-zero');
       let stockText = p.stock === 0 ? 'Sin stock' : p.stock;
-      let imgHtml = p.imagen ? `<img src="${p.imagen}" style="width:32px;height:32px;border-radius:6px;object-fit:cover;vertical-align:middle;margin-right:8px">` : '';
-      return `<tr class="pedido-row">
-        <td><div style="display:flex;align-items:center">${imgHtml}<strong>${p.nombre}</strong></div></td>
-        <td>${p.categoria}</td>
-        <td>S/ ${parseFloat(p.precio).toFixed(2)}</td>
-        <td class="${stockClass}">${stockText}</td>
+      let imgHtml = p.imagen ? \`<img src="\${p.imagen}" style="width:32px;height:32px;border-radius:6px;object-fit:cover;vertical-align:middle;margin-right:8px">\` : '';
+      return \`<tr class="pedido-row">
+        <td><div style="display:flex;align-items:center">\${imgHtml}<strong>\${p.nombre}</strong></div></td>
+        <td>\${p.categoria}</td>
+        <td>S/ \${parseFloat(p.precio).toFixed(2)}</td>
+        <td class="\${stockClass}">\${stockText}</td>
         <td>
-          <button class="btn-sm btn-edit" onclick='editarProducto(${JSON.stringify(p).replace(/'/g, "&#39;")})'>✏️ Editar</button>
+          <button class="btn-sm btn-edit" onclick='editarProducto(\${JSON.stringify(p).replace(/'/g, "&#39;")})'>✏️ Editar</button>
           &nbsp;
-          <button class="btn-sm btn-del" onclick="eliminarProducto(${p.id})">🗑️</button>
+          <button class="btn-sm btn-del" onclick="eliminarProducto(\${p.id})">🗑️</button>
         </td>
-      </tr>`;
+      </tr>\`;
     }).join('');
-    container.innerHTML = `<div class="table-container"><table>
+    container.innerHTML = \`<div class="table-container"><table>
       <thead><tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table></div>`;
+      <tbody>\${rows}</tbody>
+    </table></div>\`;
   }
 
   function openModal(reset=true) {
@@ -225,7 +264,7 @@ async function guardarProducto() {
     imagen: document.getElementById('f-imagen').value,
   };
   if (!body.nombre || !body.precio) { alert('Completa nombre y precio'); return; }
-  const url = id ? `/api/productos/${id}` : '/api/productos';
+  const url = id ? \`/api/productos/\${id}\` : '/api/productos';
   const method = id ? 'PUT' : 'POST';
   const res = await fetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
   if (res.ok) { closeModal(); cargarProductos(); }
@@ -234,7 +273,7 @@ async function guardarProducto() {
 
 async function eliminarProducto(id) {
   if (!confirm('¿Eliminar este producto?')) return;
-  await fetch(`/api/productos/${id}`, { method: 'DELETE' });
+  await fetch(\`/api/productos/\${id}\`, { method: 'DELETE' });
   cargarProductos();
 }
 
@@ -265,14 +304,14 @@ async function loadGallery() {
       return;
     }
     
-    grid.innerHTML = images.map(url => `
+    grid.innerHTML = images.map(url => \`
       <div style="aspect-ratio:1; cursor:pointer; border-radius:8px; overflow:hidden; border:3px solid transparent; transition:0.2s; background:#f9fafb;"
-           onclick="selectImage('${url}')"
+           onclick="selectImage('\${url}')"
            onmouseover="this.style.borderColor='var(--green)'"
            onmouseout="this.style.borderColor='transparent'">
-        <img src="${url}" style="width:100%; height:100%; object-fit:cover;">
+        <img src="\${url}" style="width:100%; height:100%; object-fit:cover;">
       </div>
-    `).join('');
+    \`).join('');
   } catch(err) {
     grid.innerHTML = '<div style="color:red; grid-column: 1/-1;">Error leyendo la carpeta de medios.</div>';
   }
@@ -314,6 +353,10 @@ function uploadImage(e) {
   };
   e.target.value = ''; // reset file input
 }
+
+
+document.getElementById('admin-search').addEventListener('input', renderTabla);
+document.getElementById('admin-sort').addEventListener('change', renderTabla);
 
 cargarProductos();
 </script>

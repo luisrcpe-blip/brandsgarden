@@ -57,7 +57,7 @@ let productos = [
         "precio": 119,
         "descCorta": "Inspirado en  Angels' Share",
         "descripcion": "La copia más fiel y licorosa de Kilian, con notas de coñac, melón, canela y sándalo. Especial para noches de gala y frío. 32",
-        "imagen": ""
+        "imagen": "/uploads/productos/kismet_magic_maison_alhambra.jpg"
     },
     {
         "id": 4,
@@ -107,7 +107,7 @@ let productos = [
         "precio": 149,
         "descCorta": "Inspirado en  Creación (Crème Brûlée)",
         "descripcion": "Elegante y \"comestible\", recuerda a un postre fino con piña, crème brûlée, canela y benjuí. Un lujo gourmet para ocasiones especiales. 31",
-        "imagen": ""
+        "imagen": "/uploads/productos/lattafa_bade_e_al_oud_honor___glory.jpg"
     },
     {
         "id": 9,
@@ -400,7 +400,6 @@ let productos = [
         "imagen": ""
     },
     {
-        "id": 403,
         "id": 38,
         "categoria": "Perfumes",
         "nombre": "Eclaire Lattafa",
@@ -572,7 +571,29 @@ function requireAdmin(req, res, next) {
     res.redirect('/admin');
 }
 
-// ─── API: AUTH ────────────────────────────────────────────
+// ─── API: PRODUCTOS (WooCommerce Compatibility for Landing) ──
+app.get('/wp-json/wc/store/products', (req, res) => {
+    // Map our local products to the format expected by wcf-carousel.js
+    const mapped = productos.map(p => ({
+        id: p.id,
+        name: p.nombre,
+        prices: { price: (p.precio * 100).toString(), currency_code: 'PEN' },
+        description: p.descripcion,
+        short_description: p.descCorta,
+        images: p.imagen ? [{ src: p.imagen, thumbnail: p.imagen }] : [],
+        is_purchasable: true,
+        is_in_stock: p.stock > 0,
+        stock_quantity: p.stock,
+        categories: [{ name: p.categoria }]
+    }));
+    
+    // WooCommerce API usually includes total in headers
+    res.set('X-WP-Total', productos.length.toString());
+    res.set('X-WP-TotalPages', '1');
+    res.json(mapped);
+});
+
+// ─── API: PRODUCTOS ──────────────────────────────────────────
 app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
     const user = users.find(u => u.email === email && u.password === password);
@@ -777,10 +798,14 @@ app.get('/perfil', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/perfil.html'));
 });
 
-// Archivos estáticos (landing de perfumes, imágenes, etc.)
+// Landing Page (Fallback)
+app.get(['/', '/home'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/index.html'));
+});
+
+// Archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ─── INICIO ───────────────────────────────────────────────
 app.listen(PORT, () => {
     console.log(`✅ Brandsgarden corriendo en http://localhost:${PORT}`);
     console.log(`📦 Admin: http://localhost:${PORT}/admin`);
