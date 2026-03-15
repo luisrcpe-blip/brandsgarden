@@ -1,142 +1,173 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mis Pedidos - Brandsgarden</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  :root{--green:#1A472A;--green-mid:#0C9145;--green-light:#e8f5e9;--text:#2d2d2d;--gray:#6b7280;--border:#e5e7eb}
-  body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--text);min-height:100vh;padding:32px 16px}
-  .container{max-width:700px;margin:0 auto}
-  .logo{text-align:center;margin-bottom:32px}
-  .logo a{text-decoration:none}
-  .logo h1{font-family:'Outfit',sans-serif;font-size:1.8rem;color:var(--green);font-weight:800}
-  .logo p{color:var(--gray);font-size:.9rem;margin-top:4px}
-  /* BUSCAR */
-  .search-card{background:#fff;border-radius:20px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:24px}
-  .search-card h2{font-family:'Outfit',sans-serif;color:var(--green);font-size:1.2rem;font-weight:700;margin-bottom:16px}
-  .input-row{display:flex;gap:12px}
-  input[type=tel]{flex:1;padding:13px 16px;border:2px solid var(--border);border-radius:12px;font-size:1rem;font-family:'DM Sans',sans-serif;outline:none;transition:.2s}
-  input[type=tel]:focus{border-color:var(--green)}
-  .btn{padding:13px 24px;background:linear-gradient(135deg,#0C9145,#1A472A);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;transition:.2s;white-space:nowrap}
-  .btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(12,145,69,.3)}
-  /* PEDIDOS */
-  .pedido-card{background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:16px}
-  .pedido-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
-  .pedido-id{font-family:'Outfit',sans-serif;font-size:1.1rem;font-weight:700;color:var(--green)}
-  .pedido-fecha{color:var(--gray);font-size:.85rem;margin-top:2px}
-  .badge{display:inline-block;padding:5px 12px;border-radius:20px;font-size:.82rem;font-weight:700}
-  .badge.Preparando{background:#fef3c7;color:#92400e}
-  .badge.camino{background:#dbeafe;color:#1e40af}
-  .badge.Entregado{background:#d1fae5;color:#065f46}
-  /* TIMELINE */
-  .timeline{display:flex;align-items:center;margin:16px 0;gap:0}
-  .tl-step{display:flex;flex-direction:column;align-items:center;flex:1;position:relative}
-  .tl-step:not(:last-child)::after{content:'';position:absolute;top:16px;left:50%;width:100%;height:2px;background:var(--border);z-index:0}
-  .tl-step.done::after{background:var(--green-mid)}
-  .tl-circle{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:1rem;z-index:1;position:relative}
-  .tl-step.done .tl-circle{border-color:var(--green-mid);background:var(--green-light)}
-  .tl-step.current .tl-circle{border-color:var(--green-mid);background:var(--green-mid);color:#fff}
-  .tl-label{font-size:.72rem;color:var(--gray);margin-top:5px;text-align:center;font-weight:500}
-  .tl-step.done .tl-label,.tl-step.current .tl-label{color:var(--green);font-weight:700}
-  /* Productos del pedido */
-  .pedido-items{border-top:1px solid var(--border);padding-top:12px;margin-top:12px}
-  .pedido-item{display:flex;justify-content:space-between;font-size:.9rem;padding:4px 0;color:var(--gray)}
-  .pedido-total{display:flex;justify-content:space-between;font-weight:700;font-size:1.05rem;color:var(--green);border-top:1px solid var(--border);padding-top:10px;margin-top:8px}
-  /* States */
-  .msg{text-align:center;padding:40px;color:var(--gray)}
-  .back-link{text-align:center;margin-top:24px}
-  .back-link a{color:var(--green);text-decoration:none;font-weight:600;font-size:.95rem}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sigue tu Pedido | Brandsgarden</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1A472A;
+            --accent: #0C9145;
+            --bg: #f8faf8;
+            --card: #ffffff;
+            --text: #1f2937;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .logo h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            color: var(--primary);
+            font-weight: 800;
+        }
+        .logo a { text-decoration: none; }
+        .logo p { color: #6b7280; font-size: 0.9rem; margin-top: 5px; }
+        
+        .search-card {
+            background: var(--card);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem; }
+        .form-control {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.2s;
+        }
+        .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(12, 145, 69, 0.1); }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(26, 71, 42, 0.2); }
+        
+        .order-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid var(--accent);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        .order-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .order-id { font-weight: 700; color: var(--primary); }
+        .order-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-preparando { background: #fef3c7; color: #92400e; }
+        .status-en-camino { background: #dbeafe; color: #1e40af; }
+        .status-entregado { background: #d1fae5; color: #065f46; }
+        
+        .order-details { font-size: 0.9rem; color: #4b5563; }
+        .order-total { text-align: right; font-weight: 800; font-size: 1.1rem; color: var(--accent); margin-top: 10px; }
+        
+        .back-link { text-align: center; margin-top: 40px; }
+        .back-link a { color: var(--primary); text-decoration: none; font-weight: 600; font-size: 0.95rem; }
+    </style>
 </head>
 <body>
 <div class="container">
   <div class="logo">
-    <a href="/perfumes/index.html"><h1>🌿 Brandsgarden</h1></a>
+    <a href="/perfumes/"><h1>🌿 Brandsgarden</h1></a>
     <p>Seguimiento de tus pedidos</p>
   </div>
 
   <div class="search-card">
-    <h2>📋 Busca tus pedidos</h2>
-    <div class="input-row">
-      <input type="tel" id="telefono" placeholder="Tu número de teléfono (9 dígitos)" maxlength="9" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-      <button class="btn" onclick="buscarPedidos()">Buscar</button>
+    <h3 style="margin-bottom: 20px; font-family: 'Outfit', sans-serif;">Busca tu pedido</h3>
+    <div class="form-group">
+      <label class="form-label">Número de Celular / Teléfono</label>
+      <input type="tel" id="tel-input" class="form-control" placeholder="987654321">
     </div>
+    <button class="btn" onclick="buscarPedidos()">Consultar Pedidos →</button>
   </div>
 
   <div id="resultado"></div>
 
   <div class="back-link">
-    <a href="/perfumes/index.html">← Volver a la tienda</a>
+    <a href="/perfumes/">← Volver a la tienda</a>
   </div>
 </div>
 
 <script>
-const ESTADOS = ['Preparando','En camino','Entregado'];
-const ICONS = ['📦','🚚','✅'];
-
-function getBadgeClass(e){
-  if(e==='Preparando') return 'Preparando';
-  if(e==='Entregado') return 'Entregado';
-  return 'camino';
-}
-
-function renderTimeline(estado) {
-  const idx = ESTADOS.indexOf(estado);
-  return ESTADOS.map((e,i) => {
-    let cls = '';
-    if(i < idx) cls = 'done';
-    else if(i === idx) cls = 'current done';
-    return `<div class="tl-step ${cls}">
-      <div class="tl-circle">${ICONS[i]}</div>
-      <div class="tl-label">${e}</div>
-    </div>`;
-  }).join('');
-}
-
-async function buscarPedidos() {
-  const tel = document.getElementById('telefono').value.trim();
-  if(tel.length !== 9) { alert('Ingresa tu número de 9 dígitos'); return; }
-  const res = document.getElementById('resultado');
-  res.innerHTML = '<div class="msg">⏳ Buscando tus pedidos...</div>';
-  try {
-    const r = await fetch('/api/pedidos?telefono=' + tel);
-    const pedidos = await r.json();
-    if(!pedidos.length) {
-      res.innerHTML = '<div class="msg">📭 No encontramos pedidos con ese número.<br><small>Verifica que ingresaste el número que usaste al comprar.</small></div>';
-      return;
+    // Autofill from URL if exists
+    const urlParams = new URLSearchParams(window.location.search);
+    const tel = urlParams.get('tel');
+    if(tel) {
+        document.getElementById('tel-input').value = tel;
+        buscarPedidos();
     }
-    res.innerHTML = pedidos.map(p => `
-      <div class="pedido-card">
-        <div class="pedido-header">
-          <div>
-            <div class="pedido-id">Pedido #${p.id}</div>
-            <div class="pedido-fecha">📅 ${p.fecha}</div>
-          </div>
-          <span class="badge ${getBadgeClass(p.estado)}">${p.estado}</span>
-        </div>
-        <div class="timeline">${renderTimeline(p.estado)}</div>
-        <div class="pedido-items">
-          ${(p.productos||[]).map(pr=>`<div class="pedido-item"><span>${pr.nombre} x${pr.cantidad||1}</span><span>S/ ${parseFloat(pr.precio).toFixed(2)}</span></div>`).join('')}
-          <div class="pedido-item"><span>Envío</span><span>S/ ${parseFloat(p.envio||15).toFixed(2)}</span></div>
-          <div class="pedido-total"><span>Total pagado</span><span>S/ ${parseFloat(p.total).toFixed(2)}</span></div>
-        </div>
-        <div style="margin-top:12px;font-size:.85rem;color:var(--gray)">📍 ${p.direccion}</div>
-      </div>
-    `).join('');
-  } catch(e) {
-    res.innerHTML = '<div class="msg">❌ Error al conectar. Por favor intenta de nuevo.</div>';
-  }
-}
 
-// Auto-buscar si viene ?tel= en la URL
-const params = new URLSearchParams(window.location.search);
-if(params.get('tel')) {
-  document.getElementById('telefono').value = params.get('tel');
-  buscarPedidos();
-}
+    async function buscarPedidos() {
+        const tel = document.getElementById('tel-input').value.trim();
+        const container = document.getElementById('resultado');
+        if(!tel) return alert('Por favor ingresa tu número de teléfono');
+        
+        container.innerHTML = '<p style="text-align:center">Buscando...</p>';
+        
+        try {
+            const res = await fetch(`/api/pedidos?telefono=${tel}`);
+            const pedidos = await res.json();
+            
+            if(pedidos.length === 0) {
+                container.innerHTML = '<div class="search-card" style="text-align:center; color:#ef4444">No encontramos pedidos asociados a este número.</div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <h4 style="margin-bottom: 15px; font-family:'Outfit'">Hemos encontrado ${pedidos.length} pedido(s):</h4>
+                ${pedidos.sort((a,b) => b.id - a.id).map(p => `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span class="order-id">Pedido #${p.id}</span>
+                            <span class="order-status status-${p.estado.toLowerCase().replace(/\s+/g, '-')}">${p.estado}</span>
+                        </div>
+                        <div class="order-details">
+                            <p><strong>Fecha:</strong> ${p.fecha}</p>
+                            <p><strong>Dirección:</strong> ${p.direccion}</p>
+                            <p style="margin-top:5px"><strong>Productos:</strong> ${(p.productos || []).map(it => `${it.cantidad}x ${it.nombre}`).join(', ')}</p>
+                        </div>
+                        <div class="order-total">S/ ${(p.total || 0).toFixed(2)}</div>
+                    </div>
+                `).join('')}
+            `;
+        } catch(e) {
+            container.innerHTML = '<p style="text-align:center; color:red">Error al conectar con el servidor.</p>';
+        }
+    }
 </script>
 </body>
 </html>

@@ -75,7 +75,7 @@ app.post('/api/login', (req, res) => {
         req.session.adminEmail = user.email;
         req.session.user = { email: user.email, isAdmin: user.isAdmin };
         // Si es admin, llevar a la web (landing) con el botón especial
-        return res.json({ ok: true, redirect: user.isAdmin ? '/perfumes/' : '/perfumes/index.html' });
+        return res.json({ ok: true, redirect: '/perfumes/' });
     }
     res.status(401).json({ ok: false, error: 'Credenciales inválidas' });
 });
@@ -90,7 +90,7 @@ app.post('/api/register', (req, res) => {
     req.session.isAdmin = false;
     req.session.adminEmail = email;
     req.session.user = { email, isAdmin: false };
-    res.status(201).json({ ok: true, redirect: '/perfumes/index.html' });
+    res.status(201).json({ ok: true, redirect: '/perfumes/' });
 });
 
 app.get('/api/me', (req, res) => {

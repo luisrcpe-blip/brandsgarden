@@ -4,12 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brandsgarden | En Construcción</title>
-    
-    <!-- Google Fonts for premium look -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    
     <style>
+        :root {
+            --primary: #1A472A; /* Forest Green */
+            --accent: #0C9145; /* Vibrant Green */
+            --white: #ffffff;
+            --cream: #f4f6f4;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -18,112 +22,90 @@
 
         body {
             font-family: 'DM Sans', sans-serif;
-            background-color: #ffffff;
-            color: #2D2D2D;
-            min-height: 100vh;
+            background-color: var(--primary);
+            color: var(--white);
+            height: 100vh;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
             align-items: center;
-            text-align: center;
+            justify-content: center;
             overflow: hidden;
+            text-align: center;
         }
 
-        /* Subtle background glow to add a "luxury" touch without being overwhelming */
+        /* Animated Background Pattern */
         body::before {
-            content: '';
+            content: "";
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80vw;
-            height: 80vw;
-            background: radial-gradient(circle, rgba(26, 71, 42, 0.03) 0%, rgba(255,255,255,0) 70%);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(12, 145, 69, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(12, 145, 69, 0.1) 0%, transparent 50%);
             z-index: -1;
-            pointer-events: none;
         }
 
         .container {
             max-width: 600px;
             padding: 40px;
-            animation: fadeIn 1.2s ease-out;
-            position: relative;
-            z-index: 10;
+            z-index: 1;
         }
 
-        .logo-placeholder {
-            margin-bottom: 30px;
+        .logo-wrapper {
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease-out;
         }
 
-        .logo-placeholder img {
-            width: 250px;
-            max-width: 100%;
-            height: auto;
-            object-fit: contain;
-            /* Filter to make the logo look dark/elegant if it has colors */
-            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.05));
+        .logo-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            display: inline-block;
+            filter: drop-shadow(0 0 20px rgba(12, 145, 69, 0.5));
+            animation: float 3s ease-in-out infinite;
         }
 
         h1 {
             font-family: 'Outfit', sans-serif;
-            font-size: 3rem;
+            font-size: 3.5rem;
             font-weight: 800;
-            color: #1A472A; /* Primary Dark Green from actual landing */
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             letter-spacing: -1px;
             line-height: 1.1;
         }
 
         p {
-            font-size: 1.25rem;
-            color: #6b7280;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
             margin-bottom: 40px;
-            font-weight: 400;
+            line-height: 1.6;
         }
 
         .btn-luxury {
             display: inline-block;
-            background: linear-gradient(135deg, #0C9145 0%, #1A472A 100%);
-            color: #ffffff;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 1.1rem;
-            font-weight: 700;
-            text-decoration: none;
-            padding: 18px 45px;
+            background: linear-gradient(135deg, var(--accent), #14532d);
+            color: var(--white);
+            padding: 18px 40px;
             border-radius: 50px;
-            box-shadow: 0 10px 25px rgba(12, 145, 69, 0.3);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            border: 2px solid transparent;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(12, 145, 69, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .btn-luxury:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(12, 145, 69, 0.4);
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(12, 145, 69, 0.5);
+            background: linear-gradient(135deg, #0ea64f, var(--primary));
         }
 
-        .btn-luxury:active {
-            transform: translateY(1px);
-        }
-
-        /* Subtle shine effect on button */
-        .btn-luxury::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 50%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transform: skewX(-20deg);
-            animation: shine 4s infinite;
-        }
-
-        @keyframes fadeIn {
+        /* Animations */
+        @keyframes fadeInDown {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(-30px);
             }
             to {
                 opacity: 1;
@@ -131,33 +113,30 @@
             }
         }
 
-        @keyframes shine {
-            0% { left: -100%; }
-            20% { left: 200%; }
-            100% { left: 200%; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
         }
 
-        /* Mobile Adjustments */
-        @media (max-width: 600px) {
-            h1 { font-size: 2.2rem; }
-            p { font-size: 1.1rem; }
-            .btn-luxury { padding: 15px 35px; width: 100%; }
+        /* Responsive */
+        @media (max-width: 640px) {
+            h1 { font-size: 2.5rem; }
+            .container { padding: 20px; }
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- Logo from the WP uploads that I copied -->
-        <div class="logo-placeholder">
-            <img src="/wp-content/uploads/2026/01/Logobrandsgarden.png" alt="Brandsgarden Luxury">
+        <div class="logo-wrapper">
+            <span class="logo-icon">🌿</span>
+            <h1>Brandsgarden</h1>
         </div>
-
-        <h1>Estamos en construcción</h1>
+        
         <p>Preparando la mejor experiencia de compra para ti. Mientras tanto, puedes explorar nuestra colección exclusiva.</p>
 
         <!-- Dynamic link directly to our WP migrated perfumes landing folder -->
-        <a href="/perfumes/index.html" class="btn-luxury">Ver Landings de Perfumes</a>
+        <a href="/perfumes/" class="btn-luxury">Ver Landings de Perfumes</a>
     </div>
 
 </body>
