@@ -63,17 +63,21 @@ function requireAdmin(req, res, next) {
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
     try {
+        console.log(`Intentando login para: ${email}`);
         const [rows] = await pool.query('SELECT * FROM usuarios WHERE email = ? AND password = ?', [email, password]);
         if (rows.length > 0) {
             const user = rows[0];
             req.session.isAdmin = !!user.is_admin;
             req.session.adminEmail = user.email;
             req.session.user = { email: user.email, isAdmin: !!user.is_admin };
+            console.log("Login exitoso");
             return res.json({ ok: true, redirect: '/perfumes/' });
         }
+        console.log("Credenciales inválidas");
         res.status(401).json({ ok: false, error: 'Credenciales inválidas' });
     } catch (e) {
-        res.status(500).json({ error: 'Error en el servidor' });
+        console.error("CRITICAL LOGIN ERROR:", e.message);
+        res.status(500).json({ error: `Error en el servidor: ${e.message}` });
     }
 });
 
