@@ -9,49 +9,232 @@
   *{margin:0;padding:0;box-sizing:border-box}
   :root{--green:#1A472A;--green-light:#e8f5e9;--green-mid:#0C9145;--text:#2d2d2d;--gray:#6b7280;--border:#e5e7eb;--bg:#f4f7f4}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+  /* SIDEBAR */
   .sidebar{position:fixed;top:0;left:0;height:100vh;width:220px;background:var(--green);display:flex;flex-direction:column;padding:24px 0;z-index:100}
   .sidebar-logo{padding:0 24px 24px;border-bottom:1px solid rgba(255,255,255,.1)}
   .sidebar-logo h2{font-family:'Outfit',sans-serif;color:#fff;font-size:1.3rem;font-weight:800}
-  .nav-item{display:flex;align-items:center;gap:12px;padding:12px 24px;color:rgba(255,255,255,.75);text-decoration:none;font-weight:500;font-size:.95rem;transition:.2s}
+  .sidebar-logo p{color:rgba(255,255,255,.6);font-size:.75rem;margin-top:2px}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:12px 24px;color:rgba(255,255,255,.75);text-decoration:none;font-weight:500;font-size:.95rem;transition:.2s;cursor:pointer;border:none;background:none;width:100%;text-align:left}
   .nav-item:hover,.nav-item.active{background:rgba(255,255,255,.1);color:#fff}
+  .nav-item .icon{font-size:1.2rem;width:20px;text-align:center}
   .nav-bottom{margin-top:auto;border-top:1px solid rgba(255,255,255,.1);padding-top:8px}
+  /* MAIN */
   .main{margin-left:220px;padding:32px;min-height:100vh}
-  .page-title{font-family:'Outfit',sans-serif;font-size:1.8rem;color:var(--green);font-weight:800;margin-bottom:32px}
-  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:32px}
+  .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
+  .page-title{font-family:'Outfit',sans-serif;font-size:1.8rem;color:var(--green);font-weight:800}
+  .page-subtitle{color:var(--gray);font-size:.9rem;margin-top:2px}
+  /* CARDS */
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:32px}
   .card{background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+  .card-icon{font-size:2rem;margin-bottom:12px}
   .card-label{color:var(--gray);font-size:.85rem;font-weight:500}
   .card-value{font-family:'Outfit',sans-serif;font-size:2rem;font-weight:800;color:var(--green);margin:4px 0}
-  @media (max-width: 900px) { .sidebar { display:none } .main { margin-left:0 } }
+  .card-sub{font-size:.8rem;color:var(--gray)}
+  .card.alert .card-value{color:#dc2626}
+  /* TABLE */
+  .section{background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:24px}
+  .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+  .section-title{font-family:'Outfit',sans-serif;font-size:1.1rem;font-weight:700;color:var(--green)}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:.8rem;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;padding:0 12px 12px;border-bottom:2px solid var(--border)}
+  td{padding:14px 12px;border-bottom:1px solid var(--border);font-size:.9rem;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:.78rem;font-weight:600}
+  .badge.preparando{background:#fef3c7;color:#92400e}
+  .badge.camino{background:#dbeafe;color:#1e40af}
+  .badge.entregado{background:#d1fae5;color:#065f46}
+  select.estado-select{border:2px solid var(--border);border-radius:8px;padding:5px 8px;font-size:.85rem;font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;background:#fff}
+  select.estado-select:focus{border-color:var(--green)}
+  .loading{text-align:center;color:var(--gray);padding:40px}
+  
+  /* ROW HOVER */
+  .pedido-row { transition: 0.2s; cursor: pointer }
+  .pedido-row:hover { background: var(--green-light) }
+  
+  /* OVERLAY MODAL */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center}
+  .modal{background:#fff;border-radius:20px;padding:32px;width:100%;max-width:500px;box-shadow:0 20px 50px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto}
+  .modal h3{font-family:'Outfit',sans-serif;color:var(--green);font-size:1.3rem;font-weight:800;margin-bottom:12px}
+  .dt-row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:0.9rem}
+  .dt-label{color:var(--gray);font-weight:600}
+  .dt-val{color:var(--text);font-weight:500;text-align:right}
+  .btn-close{width:100%;margin-top:20px;padding:12px;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;font-size:.95rem}
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); transition: transform 0.3s }
+    .sidebar.open { transform: translateX(0) }
+    .main { margin-left: 0; padding: 20px }
+    .cards { grid-template-columns: 1fr }
+    /* Mobile Table Scroll */
+    .table-container { overflow-x: auto }
+    table { min-width: 600px }
+  }
 </style>
 </head>
 <body>
-<aside class="sidebar">
-  <div class="sidebar-logo"><h2>🌿 Brandsgarden</h2><p style="color:#fff;font-size:.7rem">Admin Panel</p></div>
-  <a class="nav-item active" href="/admin/dashboard">📊 Resumen</a>
-  <a class="nav-item" href="/admin/pedidos">🛒 Pedidos</a>
-  <a class="nav-item" href="/admin/productos">📦 Productos</a>
-  <a class="nav-item" href="/admin/clientes">👥 Clientes</a>
-  <a class="nav-item" href="/admin/configuracion">⚙️ Configuración</a>
-  <div class="nav-bottom"><a class="nav-item" href="/admin/logout">🚪 Cerrar sesión</a></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <h2>🌿 Brandsgarden</h2>
+      <button onclick="document.getElementById('sidebar').classList.remove('open')" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;display:none" id="close-menu-btn">✖</button>
+    </div>
+    <p>Panel Administrativo</p>
+  </div>
+  <a class="nav-item active" href="/admin/dashboard"><span class="icon">📊</span>Resumen</a>
+  <a class="nav-item" href="/admin/pedidos"><span class="icon">🛒</span>Pedidos</a>
+  <a class="nav-item" href="/admin/productos"><span class="icon">📦</span>Productos</a>
+  <a class="nav-item" href="/admin/clientes"><span class="icon">👥</span>Clientes</a>
+  <a class="nav-item" href="/admin/configuracion"><span class="icon">⚙️</span>Configuración</a>
+  <div class="nav-bottom">
+    <a class="nav-item" href="/admin/logout"><span class="icon">🚪</span>Cerrar sesión</a>
+  </div>
 </aside>
+
+<!-- MAIN -->
 <main class="main">
-  <h1 class="page-title">Panel de Resumen</h1>
+  <div class="page-header">
+    <div style="display:flex;align-items:center;gap:16px">
+      <button onclick="document.getElementById('sidebar').classList.add('open')" style="display:none;background:none;border:none;font-size:1.5rem;cursor:pointer" id="menu-btn">☰</button>
+      <div>
+        <h1 class="page-title">Panel de Resumen</h1>
+        <p class="page-subtitle" id="fecha-hoy">Cargando...</p>
+      </div>
+    </div>
+  </div>
+
   <div class="cards">
-    <div class="card"><div class="card-label">Ventas de hoy</div><div class="card-value" id="v-hoy">S/ 0</div></div>
-    <div class="card"><div class="card-label">Pedidos pendientes</div><div class="card-value" id="p-pen">0</div></div>
-    <div class="card"><div class="card-label">Total Productos</div><div class="card-value" id="t-prod">0</div></div>
+    <div class="card">
+      <div class="card-icon">💰</div>
+      <div class="card-label">Ventas de hoy</div>
+      <div class="card-value" id="stat-ventas">S/ 0</div>
+      <div class="card-sub" id="stat-ventas-sub">0 pedidos hoy</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📦</div>
+      <div class="card-label">Total Pedidos</div>
+      <div class="card-value" id="stat-total-pedidos">0</div>
+      <div class="card-sub">Histórico completo</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📬</div>
+      <div class="card-label">Pedidos pendientes</div>
+      <div class="card-value" id="stat-pendientes">0</div>
+      <div class="card-sub">Preparando o en camino</div>
+    </div>
+    <div class="card alert">
+      <div class="card-icon">⚠️</div>
+      <div class="card-label">Stock bajo (≤3 unidades)</div>
+      <div class="card-value" id="stat-stock-bajo">0</div>
+      <div class="card-sub">productos por agotar</div>
+    </div>
+  </div>
+
+  <!-- TABLA PEDIDOS -->
+  <div class="section">
+    <div class="section-header">
+      <h2 class="section-title">Últimos Pedidos</h2>
+    </div>
+    <div id="pedidos-container">
+      <div class="loading">⏳ Cargando pedidos...</div>
+    </div>
   </div>
 </main>
+
 <script>
-  async function load(){
-    const [ped, prod] = await Promise.all([fetch('/api/pedidos').then(r=>r.json()), fetch('/api/productos').then(r=>r.json())]);
-    document.getElementById('t-prod').textContent = prod.length;
-    document.getElementById('p-pen').textContent = ped.filter(p=>p.estado!=='Entregado').length;
-    const hoy = new Date().toISOString().split('T')[0];
-    const v = ped.filter(p=>p.fecha===hoy).reduce((s,p)=>s+p.total,0);
-    document.getElementById('v-hoy').textContent = `S/ ${v.toFixed(2)}`;
+  // Fecha
+  const hoy = new Date();
+  document.getElementById('fecha-hoy').textContent = hoy.toLocaleDateString('es-PE', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  const ESTADOS = ['Preparando','En camino','Entregado'];
+  const BADGE_CLASS = {'Preparando':'preparando','En camino':'camino','Entregado':'entregado'};
+
+  async function cargarDashboard() {
+    try {
+      const [pedRes, prodRes] = await Promise.all([
+        fetch('/api/pedidos'),
+        fetch('/api/productos')
+      ]);
+
+      if (pedRes.status === 401) { window.location.href = '/admin'; return; }
+
+      const pedidos = await pedRes.json();
+      const productos = await prodRes.json();
+      currentPedidos = pedidos; // Update local state for modal
+      const hoyStr = new Date().toISOString().split('T')[0];
+
+      // Stats
+      const pedidosHoy = pedidos.filter(p => p.fecha === hoyStr);
+      const ventasHoy = pedidosHoy.reduce((s, p) => s + p.total, 0);
+      const pendientes = pedidos.filter(p => p.estado !== 'Entregado').length;
+      const stockBajo = productos.filter(p => p.stock <= 3).length;
+
+      document.getElementById('stat-ventas').textContent = `S/ ${ventasHoy.toFixed(2)}`;
+      document.getElementById('stat-ventas-sub').textContent = `${pedidosHoy.length} pedido${pedidosHoy.length !== 1 ? 's' : ''} hoy`;
+      document.getElementById('stat-total-pedidos').textContent = pedidos.length;
+      document.getElementById('stat-pendientes').textContent = pendientes;
+      document.getElementById('stat-stock-bajo').textContent = stockBajo;
+
+      // Tabla
+      const container = document.getElementById('pedidos-container');
+      if (pedidos.length === 0) {
+        container.innerHTML = '<div class="loading">📭 Aún no hay pedidos registrados</div>';
+        return;
+      }
+
+      const rows = [...pedidos].reverse().map(p => `
+        <tr class="pedido-row" onclick="verDetallePedido(${p.id})">
+          <td><strong>#${p.id}</strong></td>
+          <td>${p.cliente}</td>
+          <td>${p.telefono}</td>
+          <td>S/ ${p.total.toFixed(2)}</td>
+          <td>${p.fecha}</td>
+          <td onclick="event.stopPropagation()">
+            <select class="estado-select" data-id="${p.id}" onchange="cambiarEstado(sel)">
+              ${ESTADOS.map(e => `<option value="${e}" ${e === p.estado ? 'selected' : ''}>${e}</option>`).join('')}
+            </select>
+          </td>
+        </tr>
+      `).join('');
+
+      container.innerHTML = `
+        <div class="table-container">
+          <table>
+            <thead><tr>
+              <th>Pedido</th><th>Cliente</th><th>Teléfono</th><th>Total</th><th>Fecha</th><th>Estado</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+    } catch(e) {
+      document.getElementById('pedidos-container').innerHTML = '<div class="loading">❌ Error cargando datos</div>';
+    }
   }
-  load();
+
+  async function cambiarEstado(sel) {
+    const id = sel.dataset.id;
+    const estado = sel.value;
+    await fetch(`/api/pedidos/${id}/estado`, {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ estado })
+    });
+  }
+
+  // MODAL DETALLE PEDIDO
+  let currentPedidos = [];
+  function verDetallePedido(id) {
+    const p = currentPedidos.find(x => x.id === id);
+    if(!p) return;
+    
+    // Aquí podrías abrir un modal si lo tuvieras implementado, 
+    // por ahora el dashboard usa un listado simple.
+  }
+
+  cargarDashboard();
 </script>
 </body>
 </html>

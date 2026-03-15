@@ -74,7 +74,8 @@ app.post('/api/login', (req, res) => {
         req.session.isAdmin = user.isAdmin;
         req.session.adminEmail = user.email;
         req.session.user = { email: user.email, isAdmin: user.isAdmin };
-        return res.json({ ok: true, redirect: user.isAdmin ? '/admin/dashboard' : '/perfumes/index.html' });
+        // Si es admin, llevar a la web (landing) con el botón especial
+        return res.json({ ok: true, redirect: user.isAdmin ? '/perfumes/' : '/perfumes/index.html' });
     }
     res.status(401).json({ ok: false, error: 'Credenciales inválidas' });
 });
@@ -88,7 +89,7 @@ app.post('/api/register', (req, res) => {
     saveJSON(USERS_FILE, users);
     req.session.isAdmin = false;
     req.session.adminEmail = email;
-    req.session.user = { email: email, isAdmin: false };
+    req.session.user = { email, isAdmin: false };
     res.status(201).json({ ok: true, redirect: '/perfumes/index.html' });
 });
 
@@ -170,6 +171,26 @@ app.put('/api/pedidos/:id/estado', requireAdmin, (req, res) => {
     res.json(pedido);
 });
 
+app.post('/api/pedidos', (req, res) => {
+    const { cliente, telefono, email, direccion, productos: items, subtotal, envio, total } = req.body;
+    const nuevo = {
+        id: nextPedidoId++,
+        cliente,
+        telefono,
+        email: email || '',
+        direccion,
+        productos: items || [],
+        subtotal: subtotal || 0,
+        envio: envio || 0,
+        total: total || 0,
+        estado: 'Preparando',
+        fecha: new Date().toISOString().split('T')[0]
+    };
+    pedidos.push(nuevo);
+    saveJSON(ORDERS_FILE, pedidos);
+    res.status(201).json(nuevo);
+});
+
 // ─── AJAX COMPATIBILITY (Landing Page Orders) ─────────────
 app.all('/wp-admin/admin-ajax.php', (req, res) => {
     const action = req.query.action || req.body.action;
@@ -247,6 +268,12 @@ app.put('/api/config', requireAdmin, (req, res) => {
 });
 
 // ─── RUTAS FRONTEND ───────────────────────────────────────
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public/admin/login.html')));
+
+app.get('/perfumes/index.html', (req, res) => res.redirect('/perfumes/'));
+app.get('/perfumes', (req, res) => res.redirect('/perfumes/'));
+app.get('/perfumes/', (req, res) => res.sendFile(path.join(__dirname, 'public/perfumes/index.html')));
+
 app.get('/admin', (req, res) => req.session.isAdmin ? res.redirect('/admin/dashboard') : res.sendFile(path.join(__dirname, 'public/admin/login.html')));
 app.get('/admin/dashboard', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/dashboard.html')));
 app.get('/admin/productos', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/productos.html')));
