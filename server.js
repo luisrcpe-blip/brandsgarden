@@ -558,8 +558,11 @@ app.get('/wp-json/wc/store/products', (req, res) => {
     }));
     
     // WooCommerce API usually includes total in headers
-    res.set('X-WP-Total', productos.length.toString());
-    res.set('X-WP-TotalPages', '1');
+    // Set response headers only if they haven't been sent yet
+    if (!res.headersSent) {
+        res.set('X-WP-Total', productos.length.toString());
+        res.set('X-WP-TotalPages', '1');
+    }
     res.json(mapped);
 });
 
@@ -780,21 +783,38 @@ app.get('/api/clientes', requireAdmin, (req, res) => {
     res.json(Object.values(clientesMap));
 });
 
-// ─── RUTAS ESTÁTICAS ──────────────────────────────────────
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Servir páginas admin (requieren login)
-app.get('/admin/dashboard', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html')));
-app.get('/admin/productos', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin', 'productos.html')));
-app.get('/admin/pedidos', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin', 'pedidos.html')));
-app.get('/admin/clientes', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin', 'clientes.html')));
-
-// Ruta por defecto para el backend (admin login)
+// ─── RUTAS FRONTEND ───────────────────────────────────────
+// Admin (protegidas)
 app.get('/admin', (req, res) => {
     if (req.session.isAdmin) return res.redirect('/admin/dashboard');
-    res.sendFile(path.join(__dirname, 'public', 'admin', 'login.html'));
+    res.sendFile(path.join(__dirname, 'public/admin/login.html'));
+});
+app.get('/admin/dashboard', requireAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/admin/dashboard.html'));
+});
+app.get('/admin/productos', requireAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/admin/productos.html'));
+});
+app.get('/admin/clientes', requireAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/admin/clientes.html'));
+});
+app.get('/admin/configuracion', requireAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/admin/configuracion.html'));
+});
+app.get('/admin/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/admin');
 });
 
+// Cliente
+app.get('/perfil', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/perfil.html'));
+});
+
+// Archivos estáticos
+app.use(express.static(path.join(__dirname, 'public')));
+
+// ─── INICIO ───────────────────────────────────────────────
 app.listen(PORT, () => {
     console.log(`🚀 Servidor Brandsgarden corriendo en http://localhost:${PORT}`);
 });
