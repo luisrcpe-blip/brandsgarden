@@ -181,6 +181,27 @@ app.delete('/api/productos/:id', requireAdmin, async (req, res) => {
     }
 });
 
+app.post('/api/productos/import', requireAdmin, async (req, res) => {
+    const productos = req.body;
+    if (!Array.isArray(productos)) return res.status(400).json({ error: 'Se esperaba un array de productos' });
+    
+    try {
+        let count = 0;
+        for (const p of productos) {
+            await pool.query(
+                'INSERT INTO productos (id, sku, nombre, categoria, stock, precio, imagen, desc_corta, descripcion) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE nombre=VALUES(nombre), categoria=VALUES(categoria), stock=VALUES(stock), precio=VALUES(precio), imagen=VALUES(imagen), desc_corta=VALUES(desc_corta), descripcion=VALUES(descripcion)',
+                [p.id, p.sku || '', p.nombre, p.categoria || 'Perfumes', p.stock || 0, p.precio || 0, p.imagen || '', p.descCorta || '', p.descripcion || '']
+            );
+            count++;
+        }
+        await addLog(req, 'IMPORTACION_MASIVA', { cantidad: count });
+        res.json({ ok: true, count });
+    } catch (e) {
+        console.error("Error importando:", e);
+        res.status(500).json({ error: 'Error durante la importación' });
+    }
+});
+
 // ─── API: PEDIDOS ─────────────────────────────────────────
 app.get('/api/pedidos', async (req, res) => {
     try {
@@ -339,6 +360,7 @@ app.get('/admin/pedidos', requireAdmin, (req, res) => res.sendFile(path.join(__d
 app.get('/admin/clientes', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/clientes.html')));
 app.get('/admin/logs', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/logs.html')));
 app.get('/admin/configuracion', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/configuracion.html')));
+app.get('/admin/importador', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/importador.html')));
 
 app.get('/perfil', (req, res) => res.sendFile(path.join(__dirname, 'public/perfil.html')));
 app.use(express.static(path.join(__dirname, 'public')));

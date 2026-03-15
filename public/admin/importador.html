@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importador Masivo - Admin Brandsgarden</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #27ae60;
+            --bg: #f8f9fa;
+            --sidebar-width: 260px;
+        }
+
+        /* Standard Sidebar Layout */
+        body { background: #f4f7f6; font-family: 'Inter', sans-serif; display: flex; color: #333; margin: 0; }
+        .sidebar { width: 260px; background: #2c3e50; height: 100vh; position: fixed; color: white; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 30px 20px; font-size: 1.5rem; font-weight: 700; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .nav-menu { flex: 1; padding: 20px 0; }
+        .nav-item { display: flex; align-items: center; padding: 12px 25px; color: rgba(255,255,255,0.7); text-decoration: none; transition: 0.3s; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; border-left: 4px solid var(--accent); }
+        .nav-item .icon { margin-right: 15px; font-size: 1.2rem; }
+        .nav-bottom { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+
+        .main-content { margin-left: 260px; flex: 1; padding: 40px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        h2 { margin-bottom: 20px; color: var(--primary); }
+        p { margin-bottom: 20px; color: #666; font-size: 0.95rem; line-height: 1.5; }
+
+        textarea { width: 100%; height: 350px; padding: 15px; border-radius: 8px; border: 1px solid #ddd; font-family: monospace; font-size: 14px; margin-bottom: 20px; background: #fbfbfb; resize: vertical; }
+        .btn { background: var(--accent); color: white; padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 10px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(39,174,96,0.3); }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        #status { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; }
+        .status-success { background: #d4edda; color: #155724; display: block !important; border: 1px solid #c3e6cb; }
+        .status-error { background: #f8d7da; color: #721c24; display: block !important; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">Admin Panel</div>
+        <div class="nav-menu">
+            <a class="nav-item" href="/admin/dashboard"><span class="icon">📊</span>Resumen</a>
+            <a class="nav-item" href="/admin/pedidos"><span class="icon">🛒</span>Pedidos</a>
+            <a class="nav-item" href="/admin/productos"><span class="icon">📦</span>Productos</a>
+            <a class="nav-item" href="/admin/clientes"><span class="icon">👥</span>Clientes</a>
+            <a class="nav-item" href="/admin/logs"><span class="icon">📜</span>Auditoría</a>
+            <a class="nav-item" href="/admin/configuracion"><span class="icon">⚙️</span>Configuración</a>
+            <a class="nav-item active" href="/admin/importador"><span class="icon">📥</span>Importador</a>
+        </div>
+        <div class="nav-bottom">
+            <a class="nav-item" href="/admin/logout"><span class="icon">🚪</span>Cerrar sesión</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>📥 Importador Masivo</h1>
+        </div>
+
+        <div class="card">
+            <h2>Restaurar Catálogo de Productos</h2>
+            <p>Pega el contenido del JSON de respaldo aquí debajo. Esta herramienta insertará o actualizará los productos directamente en la base de datos MySQL profesional.</p>
+            
+            <textarea id="jsonInput" placeholder='[{"id": 1, "nombre": "Producto...", ...}]'></textarea>
+            
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <button class="btn" id="importBtn">
+                    <i class="fas fa-upload"></i> Iniciar Importación
+                </button>
+                <span id="loader" style="display: none; color: #666; font-size: 0.9rem;">
+                    <i class="fas fa-spinner fa-spin"></i> Procesando datos...
+                </span>
+            </div>
+
+            <div id="status"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('importBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('importBtn');
+            const loader = document.getElementById('loader');
+            const input = document.getElementById('jsonInput').value;
+            const status = document.getElementById('status');
+            
+            status.style.display = 'none';
+            if (!input.trim()) {
+                alert('Por favor, pega el JSON de respaldo primero.');
+                return;
+            }
+            
+            try {
+                const data = JSON.parse(input);
+                btn.disabled = true;
+                loader.style.display = 'inline';
+                
+                const res = await fetch('/api/productos/import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await res.json();
+                
+                if (res.ok) {
+                    status.className = 'status-success';
+                    status.innerHTML = `<strong>✅ ¡Importación completa!</strong><br>Se han procesado <b>${result.count}</b> productos exitosamente en MySQL.`;
+                } else {
+                    throw new Error(result.error || 'Error en el servidor');
+                }
+            } catch (e) {
+                status.className = 'status-error';
+                status.innerHTML = `<strong>❌ Error de Importación</strong><br>${e.message}`;
+            } finally {
+                btn.disabled = false;
+                loader.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
