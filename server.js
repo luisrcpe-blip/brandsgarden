@@ -270,9 +270,7 @@ app.put('/api/config', requireAdmin, (req, res) => {
 // ─── RUTAS FRONTEND ───────────────────────────────────────
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public/admin/login.html')));
 
-app.get('/perfumes/index.html', (req, res) => res.redirect('/perfumes/'));
-app.get('/perfumes', (req, res) => res.redirect('/perfumes/'));
-app.get('/perfumes/', (req, res) => res.sendFile(path.join(__dirname, 'public/perfumes/index.html')));
+app.get('/perfumes/index.html', (req, res) => res.redirect(301, '/perfumes/'));
 
 app.get('/admin', (req, res) => req.session.isAdmin ? res.redirect('/admin/dashboard') : res.sendFile(path.join(__dirname, 'public/admin/login.html')));
 app.get('/admin/dashboard', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/dashboard.html')));
