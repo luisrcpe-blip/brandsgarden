@@ -25,6 +25,9 @@ app.use(session({
 }));
 
 // ─── BASE DE DATOS EN MEMORIA (sin DB por ahora) ──────────
+let users = [
+    { email: 'jeffrc.pe@gmail.com', password: 'BrandsGarden2026', isAdmin: true }
+];
 let productos = [
     { id: 1, categoria: 'Perfumes', nombre: 'Hugo Boss Bottled 100ml', stock: 12, precio: 250.00, imagen: '' },
     { id: 2, categoria: 'Perfumes', nombre: 'Polo Ralph Lauren Blue 50ml', stock: 5, precio: 180.00, imagen: '' },
@@ -55,15 +58,34 @@ function requireAdmin(req, res, next) {
 // ─── API: AUTH ────────────────────────────────────────────
 app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
-    if (
-        email === (process.env.ADMIN_EMAIL || 'admin@brandsgarden.com') &&
-        password === (process.env.ADMIN_PASSWORD || 'BrandsGarden2026')
-    ) {
-        req.session.isAdmin = true;
-        req.session.adminEmail = email;
-        return res.json({ ok: true, redirect: '/admin/dashboard' });
+    const user = users.find(u => u.email === email && u.password === password);
+    
+    if (user) {
+        req.session.isAdmin = user.isAdmin || false;
+        req.session.adminEmail = user.email;
+        req.session.user = { email: user.email, isAdmin: user.isAdmin };
+        return res.json({ ok: true, redirect: user.isAdmin ? '/admin/dashboard' : '/perfumes/index.html' });
     }
     res.status(401).json({ ok: false, error: 'Correo o contraseña incorrectos' });
+});
+
+app.post('/api/register', (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ error: 'Datos incompletos' });
+    
+    if (users.find(u => u.email === email)) {
+        return res.status(400).json({ error: 'El usuario ya existe' });
+    }
+    
+    const nuevo = { email, password, isAdmin: false };
+    users.push(nuevo);
+    
+    // Auto-login after register
+    req.session.isAdmin = false;
+    req.session.adminEmail = email;
+    req.session.user = { email, isAdmin: false };
+    
+    res.status(201).json({ ok: true, redirect: '/perfumes/index.html' });
 });
 
 app.get('/api/logout', (req, res) => {
