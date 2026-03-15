@@ -24,10 +24,16 @@ app.use(session({
 }));
 
 // ─── BASE DE DATOS PERSISTENTE (JSON) ──────────────────────
-const PRODUCTS_FILE = path.join(__dirname, 'products.json');
-const ORDERS_FILE = path.join(__dirname, 'orders.json');
-const CONFIG_FILE = path.join(__dirname, 'config.json');
-const USERS_FILE = path.join(__dirname, 'users.json');
+const DB_DIR = path.join(__dirname, 'database');
+if (!fs.existsSync(DB_DIR)) {
+    fs.mkdirSync(DB_DIR, { recursive: true });
+}
+
+const PRODUCTS_FILE = path.join(DB_DIR, 'products.json');
+const ORDERS_FILE = path.join(DB_DIR, 'orders.json');
+const CONFIG_FILE = path.join(DB_DIR, 'config.json');
+const USERS_FILE = path.join(DB_DIR, 'users.json');
+const LOGS_FILE = path.join(DB_DIR, 'activity_log.json');
 
 function loadJSON(file, defaultValue) {
     try {
@@ -44,9 +50,33 @@ function loadJSON(file, defaultValue) {
 
 function saveJSON(file, data) {
     try {
+        // Backup antes de guardar
+        if (fs.existsSync(file)) {
+            fs.copyFileSync(file, file + '.bak');
+        }
         fs.writeFileSync(file, JSON.stringify(data, null, 2));
     } catch (e) {
         console.error(`Error guardando ${file}:`, e);
+    }
+}
+
+function addLog(req, action, details) {
+    try {
+        const logs = loadJSON(LOGS_FILE, []);
+        const entry = {
+            fecha: new Date().toLocaleString('es-PE', { timeZone: 'America/Lima' }),
+            isoDate: new Date().toISOString(),
+            usuario: req.session.adminEmail || 'Sistema',
+            ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+            accion: action,
+            detalles: details
+        };
+        logs.push(entry);
+        // Mantener solo los últimos 1000 logs para no saturar
+        if (logs.length > 1000) logs.shift();
+        saveJSON(LOGS_FILE, logs);
+    } catch (e) {
+        console.error("Error en addLog:", e);
     }
 }
 
@@ -138,6 +168,7 @@ app.post('/api/productos', requireAdmin, (req, res) => {
     };
     productos.push(nuevo);
     saveJSON(PRODUCTS_FILE, productos);
+    addLog(req, 'CREAR_PRODUCTO', { id: nuevo.id, nombre: nuevo.nombre, sku: nuevo.sku });
     res.status(201).json(nuevo);
 });
 
@@ -159,12 +190,18 @@ app.put('/api/productos/:id', requireAdmin, (req, res) => {
         id 
     };
     saveJSON(PRODUCTS_FILE, productos);
+    addLog(req, 'EDITAR_PRODUCTO', { id, nombre, sku });
     res.json(productos[idx]);
 });
 
 app.delete('/api/productos/:id', requireAdmin, (req, res) => {
-    productos = productos.filter(p => p.id !== parseInt(req.params.id));
-    saveJSON(PRODUCTS_FILE, productos);
+    const id = parseInt(req.params.id);
+    const prod = productos.find(p => p.id === id);
+    if (prod) {
+        addLog(req, 'ELIMINAR_PRODUCTO', { id, datosCompletos: prod });
+        productos = productos.filter(p => p.id !== id);
+        saveJSON(PRODUCTS_FILE, productos);
+    }
     res.json({ ok: true });
 });
 
@@ -178,30 +215,12 @@ app.get('/api/pedidos', (req, res) => {
 app.put('/api/pedidos/:id/estado', requireAdmin, (req, res) => {
     const pedido = pedidos.find(p => p.id === parseInt(req.params.id));
     if (pedido) {
+        const estadoAnterior = pedido.estado;
         pedido.estado = req.body.estado;
         saveJSON(ORDERS_FILE, pedidos);
+        addLog(req, 'CAMBIO_ESTADO_PEDIDO', { id: pedido.id, de: estadoAnterior, a: pedido.estado });
     }
     res.json(pedido);
-});
-
-app.post('/api/pedidos', (req, res) => {
-    const { cliente, telefono, email, direccion, productos: items, subtotal, envio, total } = req.body;
-    const nuevo = {
-        id: nextPedidoId++,
-        cliente,
-        telefono,
-        email: email || '',
-        direccion,
-        productos: items || [],
-        subtotal: subtotal || 0,
-        envio: envio || 0,
-        total: total || 0,
-        estado: 'Preparando',
-        fecha: new Date().toISOString().split('T')[0]
-    };
-    pedidos.push(nuevo);
-    saveJSON(ORDERS_FILE, pedidos);
-    res.status(201).json(nuevo);
 });
 
 // ─── AJAX COMPATIBILITY (Landing Page Orders) ─────────────
@@ -272,11 +291,18 @@ app.get('/api/clientes', requireAdmin, (req, res) => {
     res.json(Object.values(cMap));
 });
 
+// ─── API: LOGS (AUDITORIA) ───────────────────────────────
+app.get('/api/logs', requireAdmin, (req, res) => {
+    const logs = loadJSON(LOGS_FILE, []);
+    res.json(logs.reverse()); // Los más recientes primero
+});
+
 // ─── API: CONFIG ──────────────────────────────────────────
 app.get('/api/config', (req, res) => res.json(configuracion));
 app.put('/api/config', requireAdmin, (req, res) => {
     configuracion = { ...configuracion, ...req.body };
     saveJSON(CONFIG_FILE, configuracion);
+    addLog(req, 'EDITAR_CONFIG', req.body);
     res.json(configuracion);
 });
 
@@ -290,6 +316,7 @@ app.get('/admin/dashboard', requireAdmin, (req, res) => res.sendFile(path.join(_
 app.get('/admin/productos', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/productos.html')));
 app.get('/admin/pedidos', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/pedidos.html')));
 app.get('/admin/clientes', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/clientes.html')));
+app.get('/admin/logs', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/logs.html')));
 app.get('/admin/configuracion', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/configuracion.html')));
 
 app.get('/perfil', (req, res) => res.sendFile(path.join(__dirname, 'public/perfil.html')));
