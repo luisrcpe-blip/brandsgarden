@@ -160,5 +160,56 @@
         <a href="/perfumes/index.html" class="btn-luxury">Ver Landings de Perfumes</a>
     </div>
 
+    <!-- Admin Floating Button -->
+    <div id="admin-pills-container"></div>
+
+    <script>
+        // Check if user is admin to show floating button
+        fetch('/api/me')
+            .then(res => res.json())
+            .then(data => {
+                if (data.isAdmin) {
+                    const container = document.getElementById('admin-pills-container');
+                    const btn = document.createElement('a');
+                    btn.href = '/admin/dashboard';
+                    btn.innerHTML = '⚙️ Panel Admin';
+                    btn.style.cssText = `
+                        position: fixed;
+                        bottom: 20px;
+                        right: 20px;
+                        background: rgba(255, 255, 255, 0.15);
+                        backdrop-filter: blur(10px);
+                        -webkit-backdrop-filter: blur(10px);
+                        color: #1A472A;
+                        padding: 10px 20px;
+                        border-radius: 30px;
+                        text-decoration: none;
+                        font-family: 'Outfit', sans-serif;
+                        font-weight: 600;
+                        font-size: 0.9rem;
+                        border: 1px solid rgba(26, 71, 42, 0.2);
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+                        z-index: 1000;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        transition: all 0.3s ease;
+                    `;
+                    
+                    btn.onmouseover = () => {
+                        btn.style.background = 'rgba(26, 71, 42, 0.1)';
+                        btn.style.transform = 'translateY(-2px)';
+                    };
+                    btn.onmouseout = () => {
+                        btn.style.background = 'rgba(255, 255, 255, 0.15)';
+                        btn.style.transform = 'translateY(0)';
+                    };
+                    
+                    container.appendChild(btn);
+                }
+            })
+            .catch(err => console.error('Error checking admin status:', err));
+    </script>
+
 </body>
 </html>
