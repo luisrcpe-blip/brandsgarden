@@ -2,3 +2,14 @@ node_modules/
 .env
 .DS_Store
 *.log
+
+# Base de datos (JSON)
+products.json
+orders.json
+config.json
+users.json
+activity_log.json
+*.json.bak
+
+# Archivos de medios (Imágenes subidas)
+public/uploads/
