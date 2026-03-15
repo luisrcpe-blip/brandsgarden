@@ -23,24 +23,42 @@ app.use(session({
     cookie: { maxAge: 1000 * 60 * 60 * 8 } // 8 horas
 }));
 
-// ─── BASE DE DATOS EN MEMORIA ─────────────────────────────
-let users = [
-    { email: 'jeffrc.pe@gmail.com', password: 'BrandsGarden2026', isAdmin: true }
-];
-let productos = [
-    { id: 1, categoria: "Perfumes", nombre: "9am Dive Armaf", stock: 10, precio: 159, descCorta: "Inspirado en Bleu de Chanel + YSL Y", descripcion: "El equilibrio perfecto entre lo cítrico y lo dulce...", imagen: "" },
-    { id: 2, categoria: "Perfumes", nombre: "Khamrah Lattafa", stock: 10, precio: 159, descCorta: "Inspirado en Creación Original", descripcion: "Una fragancia irresistible con notas de canela...", imagen: "" },
-    { id: 3, categoria: "Perfumes", nombre: "Club de Nuit Intense", stock: 10, precio: 159, descCorta: "Inspirado en Aventus", descripcion: "El aroma masculino por excelencia...", imagen: "" }
-];
-// (Se asume que el usuario importará el resto o se poblará dinámicamente)
+// ─── BASE DE DATOS PERSISTENTE (JSON) ──────────────────────
+const PRODUCTS_FILE = path.join(__dirname, 'products.json');
+const ORDERS_FILE = path.join(__dirname, 'orders.json');
+const CONFIG_FILE = path.join(__dirname, 'config.json');
+const USERS_FILE = path.join(__dirname, 'users.json');
 
-let pedidos = [
-    { id: 1001, cliente: 'María García', telefono: '987654321', email: 'maria@gmail.com', direccion: 'Av. Arequipa 1200, Lima', productos: [{ nombre: '9am Dive Armaf', cantidad: 1, precio: 159 }], subtotal: 159, envio: 15, total: 174, estado: 'Entregado', fecha: '2026-03-12' },
-];
+function loadJSON(file, defaultValue) {
+    try {
+        if (!fs.existsSync(file)) {
+            fs.writeFileSync(file, JSON.stringify(defaultValue, null, 2));
+            return defaultValue;
+        }
+        return JSON.parse(fs.readFileSync(file, 'utf8'));
+    } catch (e) {
+        console.error(`Error cargando ${file}:`, e);
+        return defaultValue;
+    }
+}
 
-let nextPedidoId = 1002;
-let nextProductoId = 4;
-let configuracion = { envioBase: 15, nombreTienda: 'Brandsgarden' };
+function saveJSON(file, data) {
+    try {
+        fs.writeFileSync(file, JSON.stringify(data, null, 2));
+    } catch (e) {
+        console.error(`Error guardando ${file}:`, e);
+    }
+}
+
+// Cargar datos iniciales
+let users = loadJSON(USERS_FILE, [{ email: 'jeffrc.pe@gmail.com', password: 'BrandsGarden2026', isAdmin: true }]);
+let productos = loadJSON(PRODUCTS_FILE, []);
+let pedidos = loadJSON(ORDERS_FILE, []);
+let configuracion = loadJSON(CONFIG_FILE, { envioBase: 15, nombreTienda: 'Brandsgarden' });
+
+// IDs auto-incrementales
+let nextProductoId = productos.length > 0 ? Math.max(...productos.map(p => p.id)) + 1 : 1;
+let nextPedidoId = pedidos.length > 0 ? Math.max(...pedidos.map(p => p.id)) + 1 : 1001;
 
 function requireAdmin(req, res, next) {
     if (req.session && req.session.isAdmin) return next();
@@ -48,7 +66,43 @@ function requireAdmin(req, res, next) {
     res.redirect('/admin');
 }
 
-// ─── API: PRODUCTOS (WooCommerce Compat) ──────────────────
+// ─── API: AUTH ───────────────────────────────────────────
+app.post('/api/login', (req, res) => {
+    const { email, password } = req.body;
+    const user = users.find(u => u.email === email && u.password === password);
+    if (user) {
+        req.session.isAdmin = user.isAdmin;
+        req.session.adminEmail = user.email;
+        req.session.user = { email: user.email, isAdmin: user.isAdmin };
+        return res.json({ ok: true, redirect: user.isAdmin ? '/admin/dashboard' : '/perfumes/index.html' });
+    }
+    res.status(401).json({ ok: false, error: 'Credenciales inválidas' });
+});
+
+app.post('/api/register', (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ error: 'Datos incompletos' });
+    if (users.find(u => u.email === email)) return res.status(400).json({ error: 'El usuario ya existe' });
+    const nuevo = { email, password, isAdmin: false };
+    users.push(nuevo);
+    saveJSON(USERS_FILE, users);
+    req.session.isAdmin = false;
+    req.session.adminEmail = email;
+    req.session.user = { email: email, isAdmin: false };
+    res.status(201).json({ ok: true, redirect: '/perfumes/index.html' });
+});
+
+app.get('/api/me', (req, res) => {
+    if (req.session.user) return res.json(req.session.user);
+    res.status(401).json({ error: 'No logueado' });
+});
+
+app.get('/api/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/admin');
+});
+
+// ─── API: PRODUCTOS (WooCommerce Compat & Admin) ──────────
 app.get('/wp-json/wc/store/products', (req, res) => {
     const mapped = productos.map(p => ({
         id: p.id,
@@ -66,72 +120,144 @@ app.get('/wp-json/wc/store/products', (req, res) => {
     res.json(mapped);
 });
 
-// ─── API: AUTH ───────────────────────────────────────────
-app.post('/api/login', (req, res) => {
-    const { email, password } = req.body;
-    const user = users.find(u => u.email === email && u.password === password);
-    if (user) {
-        req.session.isAdmin = user.isAdmin;
-        req.session.adminEmail = user.email;
-        return res.json({ ok: true, redirect: '/admin/dashboard' });
-    }
-    res.status(401).json({ ok: false, error: 'Credenciales inválidas' });
+app.get('/api/productos', (req, res) => res.json(productos));
+
+app.post('/api/productos', requireAdmin, (req, res) => {
+    const { nombre, categoria, stock, precio, imagen, descCorta, descripcion } = req.body;
+    const nuevo = { 
+        id: nextProductoId++, 
+        nombre, 
+        categoria: categoria || 'Perfumes', 
+        stock: parseInt(stock) || 0, 
+        precio: parseFloat(precio) || 0, 
+        imagen: imagen || '',
+        descCorta: descCorta || '',
+        descripcion: descripcion || ''
+    };
+    productos.push(nuevo);
+    saveJSON(PRODUCTS_FILE, productos);
+    res.status(201).json(nuevo);
 });
 
-// ─── API: ADMIN DATA ──────────────────────────────────────
-app.get('/api/productos', (req, res) => res.json(productos));
-app.post('/api/productos', requireAdmin, (req, res) => {
-    const nuevo = { ...req.body, id: nextProductoId++ };
-    productos.push(nuevo);
-    res.json(nuevo);
-});
 app.put('/api/productos/:id', requireAdmin, (req, res) => {
     const id = parseInt(req.params.id);
     const idx = productos.findIndex(p => p.id === id);
-    if(idx !== -1) productos[idx] = { ...productos[idx], ...req.body, id };
+    if (idx === -1) return res.status(404).json({ error: 'No encontrado' });
+    productos[idx] = { ...productos[idx], ...req.body, id };
+    saveJSON(PRODUCTS_FILE, productos);
     res.json(productos[idx]);
 });
+
 app.delete('/api/productos/:id', requireAdmin, (req, res) => {
     productos = productos.filter(p => p.id !== parseInt(req.params.id));
+    saveJSON(PRODUCTS_FILE, productos);
     res.json({ ok: true });
 });
 
-app.get('/api/pedidos', requireAdmin, (req, res) => res.json(pedidos));
+// ─── API: PEDIDOS ─────────────────────────────────────────
+app.get('/api/pedidos', (req, res) => {
+    if (req.query.telefono) return res.json(pedidos.filter(p => p.telefono === req.query.telefono));
+    if (req.session.isAdmin) return res.json(pedidos);
+    res.status(401).json({ error: 'No autorizado' });
+});
+
 app.put('/api/pedidos/:id/estado', requireAdmin, (req, res) => {
     const pedido = pedidos.find(p => p.id === parseInt(req.params.id));
-    if(pedido) pedido.estado = req.body.estado;
+    if (pedido) {
+        pedido.estado = req.body.estado;
+        saveJSON(ORDERS_FILE, pedidos);
+    }
     res.json(pedido);
 });
 
-// ─── AJAX COMPATIBILITY ──────────────────────────────────
+// ─── AJAX COMPATIBILITY (Landing Page Orders) ─────────────
 app.all('/wp-admin/admin-ajax.php', (req, res) => {
     const action = req.query.action || req.body.action;
     if (action === 'sll_create_order') {
-        const { first_name, phone, items, shipping_total } = req.body;
+        const { first_name, email, phone, address, items, shipping_total, district, department } = req.body;
+        
+        const subtotal = (items || []).reduce((sum, item) => {
+            const prod = productos.find(p => p.id === parseInt(item.id));
+            return sum + (prod ? prod.precio * item.quantity : 0);
+        }, 0);
+        const envio = parseFloat(shipping_total) || 15;
+
         const nuevo = {
-            id: nextPedidoId++, cliente: first_name, telefono: phone,
-            total: (parseFloat(shipping_total)||15) + (items||[]).reduce((a,b)=>a+(b.price||0),0),
-            estado: 'Preparando', fecha: new Date().toISOString().split('T')[0],
-            productos: items
+            id: nextPedidoId++,
+            cliente: first_name,
+            telefono: phone,
+            email: email || '',
+            direccion: `${address || ''} (${district || ''}, ${department || ''})`,
+            productos: (items || []).map(it => {
+                const p = productos.find(x => x.id === parseInt(it.id));
+                return { nombre: p ? p.nombre : `Prod #${it.id}`, cantidad: it.quantity, precio: p ? p.precio : 0 };
+            }),
+            subtotal,
+            envio,
+            total: subtotal + envio,
+            estado: 'Preparando',
+            fecha: new Date().toISOString().split('T')[0]
         };
         pedidos.push(nuevo);
-        return res.json({ success: true, data: { redirect_url: '/perfumes/gracias.html' } });
+        saveJSON(ORDERS_FILE, pedidos);
+        return res.json({ success: true, data: { redirect_url: '/perfumes/gracias.html', order_id: nuevo.id } });
     }
-    res.status(404).send('Not Found');
+    res.status(404).json({ success: false, data: { message: 'Acción no reconocida' } });
 });
 
-// ─── RUTAS ADMIN ──────────────────────────────────────────
-app.get('/admin', (req, res) => {
-    if (req.session.isAdmin) return res.redirect('/admin/dashboard');
-    res.sendFile(path.join(__dirname, 'public/admin/login.html'));
+// ─── API: UPLOADS & MEDIA ─────────────────────────────────
+app.post('/api/upload', requireAdmin, (req, res) => {
+    const { filename, base64 } = req.body;
+    if (!filename || !base64) return res.status(400).json({ error: 'Incompleto' });
+    try {
+        const ext = path.extname(filename) || '.png';
+        const safeName = `img_${Date.now()}${ext}`;
+        const filePath = path.join(uploadDir, safeName);
+        const buffer = Buffer.from(base64.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+        fs.writeFileSync(filePath, buffer);
+        res.json({ ok: true, url: `/uploads/productos/${safeName}` });
+    } catch (e) { res.status(500).json({ error: 'Error upload' }); }
 });
+
+app.get('/api/media', requireAdmin, (req, res) => {
+    try {
+        const files = fs.readdirSync(uploadDir).filter(f => f.match(/\.(jpg|jpeg|png|gif|webp)$/i)).map(f => `/uploads/productos/${f}`);
+        res.json(files);
+    } catch(e) { res.status(500).json({ error: 'Error media' }); }
+});
+
+// ─── API: CLIENTES (CRM) ──────────────────────────────────
+app.get('/api/clientes', requireAdmin, (req, res) => {
+    const cMap = {};
+    pedidos.forEach(p => {
+        if (!cMap[p.telefono]) cMap[p.telefono] = { nombre: p.cliente, telefono: p.telefono, totalGastado: 0, numeroPedidos: 0, ultimoPedido: p.fecha };
+        cMap[p.telefono].totalGastado += p.total;
+        cMap[p.telefono].numeroPedidos++;
+        if (p.fecha > cMap[p.telefono].ultimoPedido) cMap[p.telefono].ultimoPedido = p.fecha;
+    });
+    res.json(Object.values(cMap));
+});
+
+// ─── API: CONFIG ──────────────────────────────────────────
+app.get('/api/config', (req, res) => res.json(configuracion));
+app.put('/api/config', requireAdmin, (req, res) => {
+    configuracion = { ...configuracion, ...req.body };
+    saveJSON(CONFIG_FILE, configuracion);
+    res.json(configuracion);
+});
+
+// ─── RUTAS FRONTEND ───────────────────────────────────────
+app.get('/admin', (req, res) => req.session.isAdmin ? res.redirect('/admin/dashboard') : res.sendFile(path.join(__dirname, 'public/admin/login.html')));
 app.get('/admin/dashboard', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/dashboard.html')));
-app.get('/admin/pedidos', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/pedidos.html')));
 app.get('/admin/productos', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/productos.html')));
+app.get('/admin/pedidos', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/pedidos.html')));
 app.get('/admin/clientes', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/clientes.html')));
 app.get('/admin/configuracion', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public/admin/configuracion.html')));
-app.get('/admin/logout', (req, res) => { req.session.destroy(); res.redirect('/admin'); });
 
+app.get('/perfil', (req, res) => res.sendFile(path.join(__dirname, 'public/perfil.html')));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.listen(PORT, () => console.log(`🚀 Servidor en puerto ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`✅ Server: http://localhost:${PORT}`);
+    console.log(`📦 Admin: http://localhost:${PORT}/admin`);
+});
