@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clientes - Brandsgarden Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--green:#1A472A;--green-light:#e8f5e9;--green-mid:#0C9145;--text:#2d2d2d;--gray:#6b7280;--border:#e5e7eb;--bg:#f4f7f4}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+  
+  /* SIDEBAR */
+  .sidebar{position:fixed;top:0;left:0;height:100vh;width:220px;background:var(--green);display:flex;flex-direction:column;padding:24px 0;z-index:100;transition:transform 0.3s}
+  .sidebar-logo{padding:0 24px 24px;border-bottom:1px solid rgba(255,255,255,.1)}
+  .sidebar-logo h2{font-family:'Outfit',sans-serif;color:#fff;font-size:1.3rem;font-weight:800}
+  .sidebar-logo p{color:rgba(255,255,255,.6);font-size:.75rem;margin-top:2px}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:12px 24px;color:rgba(255,255,255,.75);text-decoration:none;font-weight:500;font-size:.95rem;transition:.2s}
+  .nav-item:hover,.nav-item.active{background:rgba(255,255,255,.1);color:#fff}
+  .nav-item .icon{font-size:1.2rem;width:20px;text-align:center}
+  .nav-bottom{margin-top:auto;border-top:1px solid rgba(255,255,255,.1);padding-top:8px}
+
+  /* MAIN */
+  .main{margin-left:220px;padding:32px;min-height:100vh}
+  .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
+  .page-title{font-family:'Outfit',sans-serif;font-size:1.8rem;color:var(--green);font-weight:800}
+  
+  /* TABLE */
+  .section{background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:.8rem;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;padding:0 12px 12px;border-bottom:2px solid var(--border)}
+  td{padding:14px 12px;border-bottom:1px solid var(--border);font-size:.9rem;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  .loading{text-align:center;color:var(--gray);padding:40px}
+  
+  /* CLIENT CARD STATS */
+  .badge-gastado{background:#d1fae5;color:#065f46;padding:4px 10px;border-radius:8px;font-weight:700;}
+  .badge-pedidos{background:#f3f4f6;color:#374151;padding:4px 10px;border-radius:8px;font-weight:700;}
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); width: 260px; z-index: 300 }
+    .sidebar.open { transform: translateX(0) }
+    .main { margin-left: 0; padding: 20px }
+    .table-container { overflow-x: auto }
+    table { min-width: 600px }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <h2>🌿 Brandsgarden</h2>
+      <button onclick="document.getElementById('sidebar').classList.remove('open')" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;display:none" id="close-menu-btn">✖</button>
+    </div>
+    <p>Panel Administrativo</p>
+  </div>
+  <a class="nav-item" href="/admin/dashboard"><span class="icon">📊</span>Resumen</a>
+  <a class="nav-item" href="/admin/productos"><span class="icon">📦</span>Productos</a>
+  <a class="nav-item active" href="/admin/clientes"><span class="icon">👥</span>Clientes</a>
+  <a class="nav-item" href="/admin/configuracion"><span class="icon">⚙️</span>Configuración</a>
+  <div class="nav-bottom">
+    <a class="nav-item" href="/admin/logout"><span class="icon">🚪</span>Cerrar sesión</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="page-header">
+    <div style="display:flex;align-items:center;gap:16px">
+      <button onclick="document.getElementById('sidebar').classList.add('open')" style="display:none;background:none;border:none;font-size:1.5rem;cursor:pointer" id="menu-btn">☰</button>
+      <div>
+        <h1 class="page-title">Directorio de Clientes</h1>
+        <p style="color:var(--gray);font-size:0.9rem;margin-top:4px;">Historial de compradores y gasto acumulado</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div id="clientes-container"><div class="loading">⏳ Cargando clientes...</div></div>
+  </div>
+</main>
+
+<script>
+  if(window.innerWidth <= 900) { 
+    document.getElementById('menu-btn').style.display = 'block'; 
+    document.getElementById('close-menu-btn').style.display = 'block';
+  }
+
+  async function cargarClientes() {
+    try {
+      const res = await fetch('/api/clientes');
+      if (res.status === 401) { window.location.href = '/admin'; return; }
+      
+      const clientes = await res.json();
+      const container = document.getElementById('clientes-container');
+      
+      if (clientes.length === 0) {
+        container.innerHTML = '<div class="loading">📭 Aún no tienes clientes registrados.</div>';
+        return;
+      }
+      
+      // Ordenar por total gastado (los mejores clientes primero)
+      clientes.sort((a,b) => b.totalGastado - a.totalGastado);
+
+      const rows = clientes.map(c => `
+        <tr>
+          <td>
+            <strong>${c.nombre}</strong><br>
+            <span style="color:var(--gray);font-size:0.8rem">${c.email || 'Sin correo'}</span>
+          </td>
+          <td>${c.telefono}</td>
+          <td><span class="badge-pedidos">${c.numeroPedidos} pedidos</span></td>
+          <td><span class="badge-gastado">S/ ${parseFloat(c.totalGastado).toFixed(2)}</span></td>
+          <td style="color:var(--gray);font-size:0.85rem">${c.ultimoPedido}</td>
+        </tr>
+      `).join('');
+      
+      container.innerHTML = `<div class="table-container"><table>
+        <thead><tr><th>Cliente</th><th>Teléfono / DNI</th><th>Total Pedidos</th><th>LTV (Gastado)</th><th>Última Compra</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>`;
+    } catch(err) {
+      document.getElementById('clientes-container').innerHTML = '<div class="loading" style="color:red">Error al cargar clientes</div>';
+    }
+  }
+
+  cargarClientes();
+</script>
+</body>
+</html>

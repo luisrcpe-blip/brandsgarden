@@ -1,0 +1,58 @@
+:root {
+    /* -- Wild Inspired Palette -- */
+    --primary: #1A472A;       /* Deep Forest Green (Logo/Text) */
+    --primary-dark: #11301b;
+    --primary-light: #E8F5E9; /* Very light green for subtle backgrounds */
+    
+    /* The big colorful background from reference */
+    --hero-bg: #1a472a;       /* Deep Forest Green Fallback */
+    --glass-border: rgba(255, 255, 255, 0.6);
+    
+    --accent: #ffffff;        /* White text/buttons on peach */
+    --accent-hover: #f0f0f0;
+    
+    --text-dark: #2D2D2D;     /* Soft Black */
+    --text-light: #4b5563;
+    --white: #ffffff;
+    
+    --success: #1A472A;
+    --danger: #ef4444;
+    --warning: #00B67A;       /* Trustpilot Green */
+    
+    --border: #e2e8f0;
+    --glass: rgba(255, 255, 255, 0.9);
+    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --radius-lg: 24px;
+    --radius-full: 9999px;
+    
+    /* Urgency Section Colors */
+    --urgency-bg: #FFE8F0;
+    --urgency-accent: #d2263b;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: #f8fcf9; /* Very light subtle green base */
+    background-image: 
+        radial-gradient(at 10% 10%, rgba(26, 71, 42, 0.08) 0px, transparent 50%),
+        radial-gradient(at 90% 90%, rgba(197, 160, 89, 0.15) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, rgba(26, 71, 42, 0.05) 0px, transparent 50%);
+    background-attachment: fixed;
+    color: var(--text-dark);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* ... rest of existing CSS ... */

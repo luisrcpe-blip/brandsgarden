@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brandsgarden | En Construcción</title>
+    
+    <!-- Google Fonts for premium look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: #ffffff;
+            color: #2D2D2D;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        /* Subtle background glow to add a "luxury" touch without being overwhelming */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80vw;
+            height: 80vw;
+            background: radial-gradient(circle, rgba(26, 71, 42, 0.03) 0%, rgba(255,255,255,0) 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 600px;
+            padding: 40px;
+            animation: fadeIn 1.2s ease-out;
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo-placeholder {
+            margin-bottom: 30px;
+        }
+
+        .logo-placeholder img {
+            width: 250px;
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+            /* Filter to make the logo look dark/elegant if it has colors */
+            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.05));
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3rem;
+            font-weight: 800;
+            color: #1A472A; /* Primary Dark Green from actual landing */
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+            line-height: 1.1;
+        }
+
+        p {
+            font-size: 1.25rem;
+            color: #6b7280;
+            margin-bottom: 40px;
+            font-weight: 400;
+        }
+
+        .btn-luxury {
+            display: inline-block;
+            background: linear-gradient(135deg, #0C9145 0%, #1A472A 100%);
+            color: #ffffff;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-decoration: none;
+            padding: 18px 45px;
+            border-radius: 50px;
+            box-shadow: 0 10px 25px rgba(12, 145, 69, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border: 2px solid transparent;
+        }
+
+        .btn-luxury:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(12, 145, 69, 0.4);
+        }
+
+        .btn-luxury:active {
+            transform: translateY(1px);
+        }
+
+        /* Subtle shine effect on button */
+        .btn-luxury::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: skewX(-20deg);
+            animation: shine 4s infinite;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            20% { left: 200%; }
+            100% { left: 200%; }
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            h1 { font-size: 2.2rem; }
+            p { font-size: 1.1rem; }
+            .btn-luxury { padding: 15px 35px; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Logo from the WP uploads that I copied -->
+        <div class="logo-placeholder">
+            <img src="/wp-content/uploads/2026/01/Logobrandsgarden.png" alt="Brandsgarden Luxury">
+        </div>
+
+        <h1>Estamos en construcción</h1>
+        <p>Preparando la mejor experiencia de compra para ti. Mientras tanto, puedes explorar nuestra colección exclusiva.</p>
+
+        <!-- Dynamic link directly to our WP migrated perfumes landing folder -->
+        <a href="/perfumes/index.html" class="btn-luxury">Ver Landings de Perfumes</a>
+    </div>
+
+</body>
+</html>
