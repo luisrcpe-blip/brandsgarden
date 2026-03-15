@@ -111,10 +111,21 @@ app.get('/api/logout', (req, res) => {
 
 app.get('/api/debug-env', (req, res) => {
     res.json({
-        DB_HOST: process.env.DB_HOST ? 'Configurado' : 'FALTA',
-        DB_USER: process.env.DB_USER ? 'Configurado' : 'FALTA',
-        DB_PASSWORD: process.env.DB_PASSWORD ? 'Configurado' : 'FALTA',
-        DB_NAME: process.env.DB_NAME ? 'Configurado' : 'FALTA',
+        libreria_utilizada: 'mysql2',
+        variables_actuales: {
+            DB_HOST: process.env.DB_HOST ? 'Configurado' : 'FALTA',
+            DB_USER: process.env.DB_USER ? 'Configurado' : 'FALTA',
+            DB_PASSWORD: process.env.DB_PASSWORD ? 'Configurado' : 'FALTA',
+            DB_NAME: process.env.DB_NAME ? 'Configurado' : 'FALTA',
+            DB_PORT: process.env.DB_PORT ? 'Configurado' : 'FALTA'
+        },
+        otras_variantes: {
+            DATABASE_URL: process.env.DATABASE_URL ? 'Configurado' : 'FALTA',
+            MYSQL_HOST: process.env.MYSQL_HOST ? 'Configurado' : 'FALTA',
+            MYSQL_USER: process.env.MYSQL_USER ? 'Configurado' : 'FALTA',
+            MYSQL_PASSWORD: process.env.MYSQL_PASSWORD ? 'Configurado' : 'FALTA',
+            MYSQL_DATABASE: process.env.MYSQL_DATABASE ? 'Configurado' : 'FALTA'
+        },
         NODE_ENV: process.env.NODE_ENV || 'not set'
     });
 });
