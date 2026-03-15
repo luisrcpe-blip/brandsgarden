@@ -37,6 +37,16 @@ const LOGS_FILE = path.join(DB_DIR, 'activity_log.json');
 
 function loadJSON(file, defaultValue) {
     try {
+        // Migración automática: si el archivo no está en /database/ pero sí en la raíz
+        const filename = path.basename(file);
+        const rootFile = path.join(__dirname, filename);
+        
+        if (!fs.existsSync(file) && fs.existsSync(rootFile)) {
+            console.log(`📦 Migrando ${filename} a la zona protegida...`);
+            fs.copyFileSync(rootFile, file);
+            // No borramos la raíz por seguridad extrema, pero el servidor usará /database/
+        }
+
         if (!fs.existsSync(file)) {
             fs.writeFileSync(file, JSON.stringify(defaultValue, null, 2));
             return defaultValue;
