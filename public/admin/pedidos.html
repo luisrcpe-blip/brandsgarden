@@ -52,37 +52,176 @@
   </div>
 </aside>
 <main class="main">
-  <h1 class="page-title">Gestión de Pedidos</h1>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px; flex-wrap:wrap; gap:16px;">
+    <h1 class="page-title" style="margin-bottom:0;">Gestión de Pedidos</h1>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <select id="bulk-action-select" style="padding:10px 14px; border-radius:8px; border:2px solid var(--border); font-family:'DM Sans',sans-serif; outline:none; cursor:pointer;" onchange="handleBulkAction(this.value); this.value=''">
+        <option value="">Acciones en masa...</option>
+        <option value="Completado">Marcar como Completado</option>
+        <option value="Cancelado">Marcar como Cancelado</option>
+        <option value="delete">🗑️ Eliminar seleccionados</option>
+      </select>
+    </div>
+  </div>
+  
   <div class="section">
-    <table>
-      <thead><tr><th>ID</th><th>Cliente</th><th>Total</th><th>Estado</th><th>Fecha</th></tr></thead>
-      <tbody id="p-body"></tbody>
-    </table>
+    <div id="pedidos-container">
+      <div class="loading">⏳ Cargando pedidos...</div>
+    </div>
   </div>
 </main>
+
 <script>
+  if(window.innerWidth <= 900) { 
+    const toggle = document.getElementById('mobile-toggle');
+    if(toggle) toggle.style.display = 'flex'; 
+    const closeBtn = document.getElementById('close-menu-btn');
+    if(closeBtn) closeBtn.style.display = 'block';
+  }
+
+  let pedidos = [];
+
   async function load(){
-    const res = await fetch('/api/pedidos');
-    const data = await res.json();
-    document.getElementById('p-body').innerHTML = data.map(p=>`
-      <tr>
-        <td>#${p.id}</td>
-        <td>${p.cliente}</td>
-        <td>S/ ${p.total.toFixed(2)}</td>
+    try {
+      const res = await fetch('/api/pedidos');
+      if (res.status === 401) { window.location.href = '/admin'; return; }
+      pedidos = await res.json();
+      renderTabla();
+    } catch(e) {
+      document.getElementById('pedidos-container').innerHTML = '<div class="loading" style="color:red">Error cargando pedidos</div>';
+    }
+  }
+
+  function renderTabla() {
+    const container = document.getElementById('pedidos-container');
+    if(pedidos.length === 0) {
+      container.innerHTML = '<div class="loading">📭 Aún no hay pedidos.</div>';
+      return;
+    }
+
+    const rows = pedidos.map(p => `
+      <tr style="transition:0.2s">
+        <td style="width: 40px; text-align:center;">
+          <input type="checkbox" class="pedido-chk" value="${p.id}" onchange="toggleRow(this)">
+        </td>
+        <td><strong style="color:var(--green)">BG-${p.id}</strong></td>
         <td>
-          <select onchange="update(${p.id}, this.value)">
-            <option ${p.estado==='Preparando'?'selected':''}>Preparando</option>
-            <option ${p.estado==='En camino'?'selected':''}>En camino</option>
-            <option ${p.estado==='Entregado'?'selected':''}>Entregado</option>
+          <div style="font-weight:600">${p.cliente}</div>
+          <div style="font-size:0.8rem; color:var(--gray)">${p.telefono} | ${p.distrito || ''}</div>
+        </td>
+        <td style="font-weight:700; color:var(--text)">S/ ${(parseFloat(p.total) || 0).toFixed(2)}</td>
+        <td>
+          <select onchange="update(${p.id}, this.value)" style="padding:6px; border-radius:6px; border:1px solid var(--border); font-family:'DM Sans',sans-serif; cursor:pointer;">
+            <option value="Preparando" ${p.estado==='Preparando'?'selected':''}>Preparando</option>
+            <option value="En camino" ${p.estado==='En camino'?'selected':''}>En camino</option>
+            <option value="Entregado" ${p.estado==='Entregado'?'selected':''}>Entregado</option>
+            <option value="Completado" ${p.estado==='Completado'?'selected':''}>Completado</option>
+            <option value="Cancelado" ${p.estado==='Cancelado'?'selected':''}>Cancelado</option>
           </select>
         </td>
-        <td>${p.fecha}</td>
+        <td style="color:var(--gray); font-size:0.85rem;">
+          ${p.fecha_creacion ? new Date(p.fecha_creacion).toLocaleDateString() : '---'}
+        </td>
       </tr>
     `).join('');
+
+    container.innerHTML = `
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th style="width: 40px; text-align:center; padding:12px; border-bottom:2px solid var(--border);"><input type="checkbox" id="chk-all" onchange="toggleAll(this)"></th>
+              <th style="text-align:left; font-size:0.8rem; color:var(--gray); padding:12px; border-bottom:2px solid var(--border);">Pedido</th>
+              <th style="text-align:left; font-size:0.8rem; color:var(--gray); padding:12px; border-bottom:2px solid var(--border);">Info Cliente</th>
+              <th style="text-align:left; font-size:0.8rem; color:var(--gray); padding:12px; border-bottom:2px solid var(--border);">Total</th>
+              <th style="text-align:left; font-size:0.8rem; color:var(--gray); padding:12px; border-bottom:2px solid var(--border);">Estado</th>
+              <th style="text-align:left; font-size:0.8rem; color:var(--gray); padding:12px; border-bottom:2px solid var(--border);">Fecha</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
   }
+
+  function toggleAll(src) {
+    const checkboxes = document.querySelectorAll('.pedido-chk');
+    checkboxes.forEach(chk => {
+      chk.checked = src.checked;
+      chk.closest('tr').style.backgroundColor = src.checked ? 'var(--green-light)' : '';
+    });
+  }
+
+  function toggleRow(chk) {
+    chk.closest('tr').style.backgroundColor = chk.checked ? 'var(--green-light)' : '';
+    const all = document.querySelectorAll('.pedido-chk');
+    const allChecked = Array.from(all).every(c => c.checked);
+    document.getElementById('chk-all').checked = allChecked;
+  }
+
+  function getSelected() {
+    const chks = document.querySelectorAll('.pedido-chk:checked');
+    return Array.from(chks).map(c => parseInt(c.value));
+  }
+
   async function update(id, pos){
-    await fetch(`/api/pedidos/${id}/estado`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({estado:pos}) });
+    await fetch('/api/pedidos/' + id + '/estado', { 
+      method:'PUT', 
+      headers:{'Content-Type':'application/json'}, 
+      body:JSON.stringify({estado:pos}) 
+    });
   }
+
+  function handleBulkAction(action) {
+    if(!action) return;
+    if(action === 'delete') {
+      bulkDelete();
+    } else {
+      bulkAction(action);
+    }
+  }
+
+  async function bulkAction(estado) {
+    const ids = getSelected();
+    if(ids.length === 0) return alert('Selecciona al menos un pedido.');
+    if(!confirm('¿Seguro que deseas cambiar ' + ids.length + ' pedidos a ' + estado + '?')) return;
+
+    try {
+      const res = await fetch('/api/pedidos/bulk', {
+        method: 'PUT',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ ids, estado })
+      });
+      if(res.ok) load();
+      else alert('Hubo un error');
+    } catch(e) { alert('Error de conexión'); }
+  }
+
+  async function bulkDelete() {
+    const ids = getSelected();
+    if(ids.length === 0) return alert('Selecciona al menos un pedido.');
+    if(!confirm('🚨 ATENCIÓN: El sistema no te dejará eliminar un pedido que no sea el último para no dañar el historial de ventas o el conteo.\n¿Intentar de todas formas con los seleccionados?')) return;
+
+    let errores = 0;
+    // Debemos borrar en orden de mayor ID al menor para que el servidor permita la purga sin dar error de "antiguo".
+    ids.sort((a,b) => b - a);
+
+    for(const id of ids) {
+      try {
+        const res = await fetch('/api/pedidos/' + id, { method: 'DELETE' });
+        if(!res.ok) {
+           const err = await res.json();
+           alert("BG-" + id + ": " + err.error);
+           errores++;
+           break; // Stop immediately 
+        }
+      } catch(e) {}
+    }
+    if(errores === 0) alert('Pedidos eliminados con éxito.');
+    // Recargar SI O SI para reflejar lo que sí se borró
+    load();
+  }
+
   load();
 </script>
 </body>

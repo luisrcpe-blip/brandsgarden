@@ -171,9 +171,9 @@
       const hoyStr = new Date().toISOString().split('T')[0];
 
       // Stats
-      const pedidosHoy = pedidos.filter(p => p.fecha === hoyStr);
-      const ventasHoy = pedidosHoy.reduce((s, p) => s + p.total, 0);
-      const pendientes = pedidos.filter(p => p.estado !== 'Entregado').length;
+      const pedidosHoy = pedidos.filter(p => p.fecha_creacion && p.fecha_creacion.split('T')[0] === hoyStr);
+      const ventasHoy = pedidosHoy.reduce((s, p) => s + (parseFloat(p.total) || 0), 0);
+      const pendientes = pedidos.filter(p => !['Entregado','Cancelado','Completado'].includes(p.estado)).length;
       const stockBajo = productos.filter(p => p.stock <= 3).length;
 
       document.getElementById('stat-ventas').textContent = `S/ ${ventasHoy.toFixed(2)}`;
@@ -191,13 +191,13 @@
 
       const rows = [...pedidos].reverse().map(p => `
         <tr class="pedido-row" onclick="verDetallePedido(${p.id})">
-          <td><strong>#${p.id}</strong></td>
+          <td><strong style="color:var(--green)">BG-${String(p.id).padStart(4, '0')}</strong></td>
           <td>${p.cliente}</td>
           <td>${p.telefono}</td>
-          <td>S/ ${p.total.toFixed(2)}</td>
-          <td>${p.fecha}</td>
+          <td style="font-weight:700">S/ ${(parseFloat(p.total) || 0).toFixed(2)}</td>
+          <td style="color:var(--gray)">${p.fecha_creacion ? new Date(p.fecha_creacion).toLocaleDateString() : '---'}</td>
           <td onclick="event.stopPropagation()">
-            <select class="estado-select" data-id="${p.id}" onchange="cambiarEstado(sel)">
+            <select class="estado-select" data-id="${p.id}" onchange="cambiarEstado(this)">
               ${ESTADOS.map(e => `<option value="${e}" ${e === p.estado ? 'selected' : ''}>${e}</option>`).join('')}
             </select>
           </td>

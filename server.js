@@ -301,6 +301,37 @@ app.put('/api/pedidos/:id/estado', requireAdmin, async (req, res) => {
     }
 });
 
+app.put('/api/pedidos/bulk', requireAdmin, async (req, res) => {
+    const { ids, estado } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) return res.status(400).json({ error: 'IDs inválidos' });
+    try {
+        await pool.query('UPDATE pedidos SET estado = ? WHERE id IN (?)', [estado, ids]);
+        await addLog(req, 'ACTUALIZAR_PEDIDOS_MASA', { ids, estado });
+        res.json({ ok: true, actualizados: ids.length });
+    } catch(e) {
+        res.status(500).json({ error: 'Error' });
+    }
+});
+
+app.delete('/api/pedidos/:id', requireAdmin, async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        const [maxRows] = await pool.query('SELECT MAX(id) as maxId FROM pedidos');
+        if (maxRows[0].maxId && id < maxRows[0].maxId) {
+            return res.status(400).json({ error: 'No se puede eliminar un pedido antiguo, ya que perdería el historial de las ventas. Déjalo ahí y pon su estado en Cancelado.' });
+        }
+
+        const [rows] = await pool.query('SELECT * FROM pedidos WHERE id = ?', [id]);
+        if (rows.length > 0) {
+            await addLog(req, 'ELIMINAR_PEDIDO', { id });
+            await pool.query('DELETE FROM pedidos WHERE id = ?', [id]);
+        }
+        res.json({ ok: true });
+    } catch (e) {
+        res.status(500).json({ error: 'Error al eliminar pedido' });
+    }
+});
+
 // ─── AJAX COMPATIBILITY (Landing Page Orders) ─────────────
 app.all('/wp-admin/admin-ajax.php', async (req, res) => {
     const action = req.query.action || req.body.action;
@@ -315,12 +346,17 @@ app.all('/wp-admin/admin-ajax.php', async (req, res) => {
             }
             const envio = parseFloat(shipping_total) || 15;
 
-            const [result] = await pool.query(
-                'INSERT INTO pedidos (cliente, dni, telefono, email, direccion, distrito, departamento, subtotal, envio, total, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                [first_name, dni || '', phone, email || '', address || '', district || '', department || '', subtotal, envio, subtotal + envio, 'Preparando']
+            // Evitar saltos de Auto Increment y forzar el inicio en 1000
+            const [maxRows] = await pool.query('SELECT MAX(id) as maxId FROM pedidos');
+            let nextId = maxRows[0].maxId ? maxRows[0].maxId + 1 : 1000;
+            if (nextId < 1000) nextId = 1000;
+
+            await pool.query(
+                'INSERT INTO pedidos (id, cliente, dni, telefono, email, direccion, distrito, departamento, subtotal, envio, total, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [nextId, first_name, dni || '', phone, email || '', address || '', district || '', department || '', subtotal, envio, subtotal + envio, 'Preparando']
             );
 
-            const pedidoId = result.insertId;
+            const pedidoId = nextId;
 
             for (const item of (items || [])) {
                 const [pRows] = await pool.query('SELECT nombre, precio FROM productos WHERE id = ?', [parseInt(item.id)]);
