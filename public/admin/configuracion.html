@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ajustes - Brandsgarden Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--green:#1A472A;--green-light:#e8f5e9;--green-mid:#0C9145;--text:#2d2d2d;--gray:#6b7280;--border:#e5e7eb;--bg:#f4f7f4}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+  
+  /* SIDEBAR */
+  .sidebar{position:fixed;top:0;left:0;height:100vh;width:220px;background:var(--green);display:flex;flex-direction:column;padding:24px 0;z-index:100;transition:transform 0.3s}
+  .sidebar-logo{padding:0 24px 24px;border-bottom:1px solid rgba(255,255,255,.1)}
+  .sidebar-logo h2{font-family:'Outfit',sans-serif;color:#fff;font-size:1.3rem;font-weight:800}
+  .sidebar-logo p{color:rgba(255,255,255,.6);font-size:.75rem;margin-top:2px}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:12px 24px;color:rgba(255,255,255,.75);text-decoration:none;font-weight:500;font-size:.95rem;transition:.2s}
+  .nav-item:hover,.nav-item.active{background:rgba(255,255,255,.1);color:#fff}
+  .nav-item .icon{font-size:1.2rem;width:20px;text-align:center}
+  .nav-bottom{margin-top:auto;border-top:1px solid rgba(255,255,255,.1);padding-top:8px}
+
+  /* MAIN */
+  .main{margin-left:220px;padding:32px;min-height:100vh}
+  .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
+  .page-title{font-family:'Outfit',sans-serif;font-size:1.8rem;color:var(--green);font-weight:800}
+  
+  .section{background:#fff;border-radius:16px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,.06);max-width:600px}
+  .form-group{margin-bottom:20px}
+  .form-group label{display:block;font-weight:700;font-size:.95rem;color:#374151;margin-bottom:8px}
+  .form-group input{width:100%;padding:14px;border:2px solid var(--border);border-radius:10px;font-size:1rem;font-family:'DM Sans',sans-serif;outline:none;transition:.2s}
+  .form-group input:focus{border-color:var(--green)}
+  .btn-save{width:100%;padding:14px;background:linear-gradient(135deg,#0C9145,#1A472A);color:#fff;border:none;border-radius:10px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;font-size:1rem;margin-top:10px;transition:0.2s}
+  .btn-save:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(12,145,69,.3)}
+  .loading{text-align:center;color:var(--gray);padding:20px}
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); width: 260px; z-index: 300 }
+    .sidebar.open { transform: translateX(0) }
+    .main { margin-left: 0; padding: 20px }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <h2>🌿 Brandsgarden</h2>
+      <button onclick="document.getElementById('sidebar').classList.remove('open')" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;display:none" id="close-menu-btn">✖</button>
+    </div>
+    <p>Panel Administrativo</p>
+  </div>
+  <a class="nav-item" href="/admin/dashboard"><span class="icon">📊</span>Resumen</a>
+  <a class="nav-item" href="/admin/pedidos"><span class="icon">🛒</span>Pedidos</a>
+  <a class="nav-item" href="/admin/productos"><span class="icon">📦</span>Productos</a>
+  <a class="nav-item" href="/admin/clientes"><span class="icon">👥</span>Clientes</a>
+  <a class="nav-item" href="/admin/logs"><span class="icon">📜</span>Auditoría</a>
+  <a class="nav-item active" href="/admin/configuracion"><span class="icon">⚙️</span>Configuración</a>
+  <a class="nav-item" href="/admin/importador"><span class="icon">📥</span>Importador</a>
+  <div class="nav-bottom">
+    <a class="nav-item" href="/admin/logout"><span class="icon">🚪</span>Cerrar sesión</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="page-header">
+    <div style="display:flex;align-items:center;gap:16px">
+      <button onclick="document.getElementById('sidebar').classList.add('open')" style="display:none;background:none;border:none;font-size:1.5rem;cursor:pointer" id="menu-btn">☰</button>
+      <div>
+        <h1 class="page-title">Ajustes de Tienda</h1>
+        <p style="color:var(--gray);font-size:0.9rem;margin-top:4px;">Configura tu tienda globalmente</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="form-group">
+      <label>Nombre de la Tienda</label>
+      <input type="text" id="conf-nombre" placeholder="Ej: Brandsgarden">
+    </div>
+    
+    <div class="form-group">
+      <label>Costo de Envío Base (S/)</label>
+      <input type="number" id="conf-envio" placeholder="Ej: 15.00" step="0.01">
+      <small style="color:var(--gray);font-size:0.85rem;display:block;margin-top:6px;">Este costo se sumará automáticamente a los pedidos en la página de ventas si no hay envío gratis.</small>
+    </div>
+
+    <button class="btn-save" id="btn-save" onclick="guardarConfig()">Guardar Configuraciones</button>
+  </div>
+</main>
+
+<script>
+  if(window.innerWidth <= 900) { 
+    document.getElementById('menu-btn').style.display = 'block'; 
+    document.getElementById('close-menu-btn').style.display = 'block';
+  }
+
+  async function cargarConfig() {
+    try {
+      const res = await fetch('/api/config');
+      if (res.status === 401) { window.location.href = '/admin'; return; }
+      const data = await res.json();
+      
+      document.getElementById('conf-nombre').value = data.nombreTienda;
+      document.getElementById('conf-envio').value = data.envioBase;
+    } catch(err) {
+      alert('Error cargando configuración');
+    }
+  }
+
+  async function guardarConfig() {
+    const btn = document.getElementById('btn-save');
+    const prevText = btn.textContent;
+    btn.textContent = 'Guardando...';
+    btn.disabled = true;
+
+    const payload = {
+      nombreTienda: document.getElementById('conf-nombre').value,
+      envioBase: parseFloat(document.getElementById('conf-envio').value) || 0
+    };
+
+    try {
+      const res = await fetch('/api/config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if(res.ok) {
+        btn.textContent = '¡Guardado con éxito!';
+        btn.style.background = '#065f46';
+        setTimeout(() => {
+          btn.textContent = prevText;
+          btn.style.background = 'linear-gradient(135deg,#0C9145,#1A472A)';
+          btn.disabled = false;
+        }, 2000);
+      } else {
+        throw new Error();
+      }
+    } catch(err) {
+      alert('Hubo un error al guardar');
+      btn.textContent = prevText;
+      btn.disabled = false;
+    }
+  }
+
+  cargarConfig();
+</script>
+</body>
+</html>

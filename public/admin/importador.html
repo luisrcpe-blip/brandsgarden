@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importador Masivo - Admin Brandsgarden</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #27ae60;
+            --bg: #f8f9fa;
+            --sidebar-width: 260px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); display: flex; }
+
+        /* Sidebar Styles (Standardizado) */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--primary);
+            height: 100vh;
+            color: white;
+            padding: 20px 0;
+            position: fixed;
+        }
+        .sidebar-logo {
+            text-align: center;
+            padding-bottom: 30px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .sidebar-nav a i { margin-right: 15px; width: 20px; text-align: center; }
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-left: 4px solid var(--accent);
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        h2 { margin-bottom: 20px; color: var(--primary); }
+        p { margin-bottom: 20px; color: #666; font-size: 0.95rem; }
+
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-family: monospace;
+            font-size: 14px;
+            margin-bottom: 20px;
+            background: #fbfbfb;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(39,174,96,0.3); }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        .status-success { background: #d4edda; color: #155724; display: block !important; }
+        .status-error { background: #f8d7da; color: #721c24; display: block !important; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-logo">Brandsgarden</div>
+        <nav class="sidebar-nav">
+            <a href="/admin/dashboard"><i class="fas fa-home"></i> Resumen</a>
+            <a href="/admin/pedidos"><i class="fas fa-shopping-cart"></i> Pedidos</a>
+            <a href="/admin/productos"><i class="fas fa-box"></i> Productos</a>
+            <a href="/admin/clientes"><i class="fas fa-users"></i> Clientes</a>
+            <a href="/admin/logs"><i class="fas fa-history"></i> Auditoría</a>
+            <a href="/admin/configuracion"><i class="fas fa-cog"></i> Configuración</a>
+            <a href="/admin/importador" class="active"><i class="fas fa-file-import"></i> Importador</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Importador Masivo de Productos</h1>
+        </div>
+
+        <div class="card">
+            <h2>Pegar datos JSON</h2>
+            <p>Pega aquí el contenido del archivo de respaldo para restaurar todos los productos en la base de datos MySQL.</p>
+            
+            <textarea id="jsonInput" placeholder='[{"id": 1, "nombre": "Producto...", ...}]'></textarea>
+            
+            <button class="btn" id="importBtn">
+                <i class="fas fa-upload"></i> Iniciar Importación
+            </button>
+
+            <div id="status"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('importBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('importBtn');
+            const input = document.getElementById('jsonInput').value;
+            const status = document.getElementById('status');
+            
+            if (!input.trim()) return alert('Por favor, pega el JSON primero');
+            
+            try {
+                const data = JSON.parse(input);
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+                
+                const res = await fetch('/api/productos/import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await res.json();
+                
+                if (res.ok) {
+                    status.className = 'status-success';
+                    status.innerHTML = `✅ ¡Éxito! Se han importado/actualizado <b>${result.count}</b> productos correctamente.`;
+                } else {
+                    throw new Error(result.error || 'Error desconocido');
+                }
+            } catch (e) {
+                status.className = 'status-error';
+                status.innerHTML = `❌ Error: ${e.message}`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-upload"></i> Iniciar Importación';
+            }
+        });
+    </script>
+</body>
+</html>

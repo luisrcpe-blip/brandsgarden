@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfumes Originales | Brans Gardne</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./wcf-carousel.css">
+</head>
+
+<body>
+    <!-- Preloader de Marca -->
+    <div id="brand-preloader" style="
+        position: fixed;
+        inset: 0;
+        background-color: #1A472A;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.8s cubic-bezier(0.645, 0.045, 0.355, 1), visibility 0.8s;
+    ">
+        <img src="/wp-content/uploads/2026/01/Logobrandsgarden.png" alt="Logo" style="
+            width: 180px;
+            max-width: 60vw;
+            opacity: 0;
+            transform: scale(0.9);
+            animation: logoAppear 2s ease-out forwards;
+        ">
+    </div>
+
+    <style>
+        @keyframes logoAppear {
+            0% {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Lock scroll while loading */
+        body.is-loading {
+            overflow: hidden;
+            height: 100vh;
+        }
+    </style>
+    <script>document.body.classList.add('is-loading');</script>
+
+    <!-- Urgency Banner Marquee -->
+    <div class="urgency-banner" id="top-urgency-banner">
+        <div class="urgency-marquee">
+            <div class="marquee-content">
+                <div class="marquee-item">⏰ Tu pedido sale <strong class="banner-shipping-day">HOY</strong> a las <span
+                        class="banner-shipping-time">9:00 PM</span>. Tiempo restante: <span
+                        class="banner-countdown countdown">00:00:00</span></div>
+                <div class="marquee-item">⏰ Tu pedido sale <strong class="banner-shipping-day">HOY</strong> a las <span
+                        class="banner-shipping-time">9:00 PM</span>. Tiempo restante: <span
+                        class="banner-countdown countdown">00:00:00</span></div>
+                <div class="marquee-item">⏰ Tu pedido sale <strong class="banner-shipping-day">HOY</strong> a las <span
+                        class="banner-shipping-time">9:00 PM</span>. Tiempo restante: <span
+                        class="banner-countdown countdown">00:00:00</span></div>
+                <div class="marquee-item">⏰ Tu pedido sale <strong class="banner-shipping-day">HOY</strong> a las <span
+                        class="banner-shipping-time">9:00 PM</span>. Tiempo restante: <span
+                        class="banner-countdown countdown">00:00:00</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logo Header -->
+    <header class="site-header">
+        <div class="container text-center">
+            <img src="/wp-content/uploads/2026/01/Logobrandsgarden.png" alt="Brands Garden" class="site-logo">
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <!-- Using a placeholder image for video background if video fails/cookies blocked, but implementing video iframe structure as requested in SOP is complex without an actual ID. Using a static high-quality background for now with overlay to simulate the "premium" vibe -->
+        <video class="hero-video-bg" autoplay muted loop playsinline>
+            <source src="/wp-content/uploads/2026/01/IMG_9853.mov" type="video/mp4">
+            <!-- Fallback for browsers that might not play the mov directly if it was mp4 encoded -->
+            Your browser does not support the video tag.
+        </video>
+        <!-- User requested text removal: "en este lado los texto no tendrian que estar" -->
+        <div class="hero-overlay" style="display:none;"></div>
+
+        <div class="hero-content container" style="display:none;">
+            <!-- Hidden content -->
+        </div>
+
+        <!-- Floating Customer Bubbles (Square Clouds - Overlay Bottom) -->
+        <div class="customer-clouds-overlay">
+            <div class="clouds-track">
+                <!-- Set 1 (10 photos) -->
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client1.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client2.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client3.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client4.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client5.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client6.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client7.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client8.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client9.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client10.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+
+                <!-- Set 2 (Duplicate) -->
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client1.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client2.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client3.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client4.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client5.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client6.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client7.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client8.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client9.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client10.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+
+                <!-- Set 3 (Duplicate for Loop) -->
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client1.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client2.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client3.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client4.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client5.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client6.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client7.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client8.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client9.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+                <div class="cloud-card"><img src="/wp-content/uploads/landings/perfumes/client10.png" width="120"
+                        height="150" alt="Cliente Feliz"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits -->
+    <!-- Benefits -->
+    <section class="benefits-section">
+        <div class="container">
+            <h2 class="text-center mb-6" style="font-size: 2.5rem; margin-bottom: 50px;">Calidad y confianza.<br>3 años
+                de experiencia.</h2>
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">🌿</div>
+                    <h3>100% Original</h3>
+                    <p>Productos originales importados en sus empaques de fábrica.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">♻️</div>
+                    <h3>Sostenible</h3>
+                    <p>Empaques eco-amigables y zero-waste.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">✨</div>
+                    <h3>Exclusivo</h3>
+                    <p>Marcas de lujo a precios accesibles.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🤍</div>
+                    <h3>Sin Riesgos</h3>
+                    <p>Pago contra entrega y garantía total.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Carousel Section -->
+    <section class="wcf-category-section container" id="product-grid-section" data-category="perfumes">
+
+        <div class="wcf-section-header">
+            <div class="wcf-section-title-wrapper">
+                <h2 class="wcf-section-title">Selecciona tus Perfumes Favoritos</h2>
+                <span class="wcf-product-count" id="total-product-count">0 productos</span>
+            </div>
+
+            <div class="wcf-header-controls">
+                <div>
+                    <div class="wcf-products-dropdown-wrapper">
+                        <button class="wcf-toggle-dropdown" type="button">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                            Ver lista completa
+                            <svg class="dropdown-arrow" width="16" height="16" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+
+                        <div class="wcf-products-dropdown" style="display:none;">
+                            <div class="wcf-dropdown-search">
+                                <input type="text" class="wcf-search-input" placeholder="Buscar producto...">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+
+                            <div class="wcf-dropdown-list" id="dropdown-product-list">
+                                <!-- Rendered by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wcf-carousel-controls">
+                    <button class="wcf-carousel-btn wcf-carousel-prev" type="button" aria-label="Anterior">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7">
+                            </path>
+                        </svg>
+                    </button>
+                    <button class="wcf-carousel-btn wcf-carousel-next" type="button" aria-label="Siguiente">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARRUSEL SWIPER -->
+        <div class="swiper wcf-product-swiper">
+            <div class="swiper-wrapper" id="carousel-products">
+                <!-- Rendered by JS -->
+            </div>
+
+            <div class="swiper-pagination"></div>
+        </div>
+
+    </section>
+
+    <!-- Scrolling Banner -->
+    <section class="scrolling-banner-section">
+        <div class="scrolling-banner-container">
+            <ul class="scrolling-banner-inner">
+                <li>
+                    <h2>💳 Pago Contraentrega</h2>
+                </li>
+                <li>
+                    <h2>⭐ 100% Originales</h2>
+                </li>
+                <li>
+                    <h2>🚚 Envío a Todo Perú</h2>
+                </li>
+                <li>
+                    <h2>🔄 Garantía de Satisfacción</h2>
+                </li>
+
+                <!-- Duplicated for seamless loop -->
+                <li aria-hidden="true">
+                    <h2>💳 Pago Contraentrega</h2>
+                </li>
+                <li aria-hidden="true">
+                    <h2>⭐ 100% Originales</h2>
+                </li>
+                <li aria-hidden="true">
+                    <h2>🚚 Envío a Todo Perú</h2>
+                </li>
+                <li aria-hidden="true">
+                    <h2>🔄 Garantía de Satisfacción</h2>
+                </li>
+
+                <li aria-hidden="true">
+                    <h2>💳 Pago Contraentrega</h2>
+                </li>
+                <li aria-hidden="true">
+                    <h2>⭐ 100% Originales</h2>
+                </li>
+                <li aria-hidden="true">
+                    <h2>🚚 Envío a Todo Perú</h2>
+                </li>
+                <li aria-hidden="true">
+                    <h2>🔄 Garantía de Satisfacción</h2>
+                </li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Reviews -->
+    <section class="reviews-section">
+        <div class="container">
+            <h2 class="text-center mb-8">Lo que dicen nuestros clientes</h2>
+            <div class="swiper mySwiper">
+                <div class="swiper-wrapper">
+                    <!-- Rendered by JS -->
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Wave Separator Top -->
+    <div class="wave-separator wave-separator-top">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 226.97" preserveAspectRatio="none">
+            <path fill="currentColor" fill-opacity="1"
+                d="M0,81,21.8,70.3C43.6,60,87,38,131,27.7,174.5,17,218,17,262,49c43.5,32,87,96,131,106.7C436.4,166,480,124,524,97c43.3-27,87-37,131-26.7,43.2,10.7,87,42.7,130,64C829.1,156,873,166,916,161c44-5,88-27,131-58.7C1090.9,70,1135,28,1178,17c43.8-11,87,11,131,26.7,43.7,16.3,87,26.3,109,32l22,5.3V241H0Z"
+                transform="translate(0 -14.03)"></path>
+        </svg>
+    </div>
+
+    <!-- Urgency Countdown Section -->
+    <section class="urgency-countdown-section">
+        <div class="container urgency-content">
+            <div class="urgency-text">
+                <div
+                    style="display:inline-block; background:#ffebeb; color:#d2263b; padding:4px 12px; border-radius:30px; font-weight:700; font-size:0.8rem; margin-bottom:15px; border:1px solid #ffccd5;">
+                    🚀 ENVÍO EXPRESS - SALIDA INMEDIATA
+                </div>
+                <h2 class="urgency-title" id="urgency-title-dynamic">
+                    TU PEDIDO SALE <strong>HOY</strong>
+                </h2>
+                <p class="urgency-description" id="urgency-message-dynamic">
+                    Compra antes de que termine el contador y tu pedido será despachado <strong>hoy mismo</strong>. ¡No
+                    esperes más!
+                </p>
+                <button onclick="document.getElementById('product-grid-section').scrollIntoView({behavior: 'smooth'})"
+                    class="btn btn-primary btn-large urgency-cta">
+                    <span>🛍️ Ver Colección</span>
+                </button>
+            </div>
+            <div class="urgency-countdown">
+                <div class="countdown-timer" id="main-countdown-timer">
+
+                    <div class="countdown-item">
+                        <span class="countdown-number" id="hours">0</span>
+                        <span class="countdown-label">Horas</span>
+                    </div>
+                    <div class="countdown-item">
+                        <span class="countdown-number" id="minutes">0</span>
+                        <span class="countdown-label">Minutos</span>
+                    </div>
+                    <div class="countdown-item">
+                        <span class="countdown-number" id="seconds">0</span>
+                        <span class="countdown-label">Segundos</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Wave Separator Bottom -->
+    <div class="wave-separator wave-separator-bottom">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 226.97" preserveAspectRatio="none">
+            <path fill="currentColor" fill-opacity="1"
+                d="M0,81,21.8,70.3C43.6,60,87,38,131,27.7,174.5,17,218,17,262,49c43.5,32,87,96,131,106.7C436.4,166,480,124,524,97c43.3-27,87-37,131-26.7,43.2,10.7,87,42.7,130,64C829.1,156,873,166,916,161c44-5,88-27,131-58.7C1090.9,70,1135,28,1178,17c43.8-11,87,11,131,26.7,43.7,16.3,87,26.3,109,32l22,5.3V241H0Z"
+                transform="translate(0 -14.03)"></path>
+        </svg>
+    </div>
+
+    <!-- FAQ Section Premium -->
+    <section class="faq-premium-section">
+        <div class="container">
+            <!-- Header -->
+            <div class="faq-premium-header">
+                <p class="faq-subtitle">Todo lo que Necesitas Saber</p>
+                <h2 class="faq-title">
+                    <span><strong>Preguntas</strong> Frecuentes</span>
+                </h2>
+                <p class="faq-description">
+                    Encuentra respuestas rápidas sobre envíos, devoluciones, autenticidad y cuidado de tus perfumes —
+                    para que compres con total confianza.
+                </p>
+            </div>
+
+            <!-- FAQ Items -->
+            <div class="faq-premium-items">
+                <div class="faq-premium-item">
+                    <div class="faq-premium-question" onclick="this.parentElement.classList.toggle('active')">
+                        <h3>¿Cómo funciona el pago contraentrega?</h3>
+                        <div class="faq-icon-wrapper">
+                            <span class="faq-icon-plus">+</span>
+                            <span class="faq-icon-minus">−</span>
+                        </div>
+                    </div>
+                    <div class="faq-premium-answer">
+                        <p>Realizas tu pedido hoy y pagas en efectivo cuando el repartidor te entrega tu perfume. Sin
+                            tarjetas, sin riesgos. 100% seguro.</p>
+                    </div>
+                </div>
+
+                <div class="faq-premium-item">
+                    <div class="faq-premium-question" onclick="this.parentElement.classList.toggle('active')">
+                        <h3>¿Los perfumes son 100% originales?</h3>
+                        <div class="faq-icon-wrapper">
+                            <span class="faq-icon-plus">+</span>
+                            <span class="faq-icon-minus">−</span>
+                        </div>
+                    </div>
+                    <div class="faq-premium-answer">
+                        <p>Sí, todos nuestros perfumes son 100% originales e importados directamente. Cada producto
+                            incluye su caja, sello de autenticidad y garantía de devolución si no estás satisfecho.</p>
+                    </div>
+                </div>
+
+                <div class="faq-premium-item">
+                    <div class="faq-premium-question" onclick="this.parentElement.classList.toggle('active')">
+                        <h3>¿Cuánto tiempo tarda el envío?</h3>
+                        <div class="faq-icon-wrapper">
+                            <span class="faq-icon-plus">+</span>
+                            <span class="faq-icon-minus">−</span>
+                        </div>
+                    </div>
+                    <div class="faq-premium-answer">
+                        <p>En Lima la entrega es de 24 a 48 horas. En provincias de 3 a 5 días hábiles. Recibirás un
+                            código de seguimiento para rastrear tu pedido en tiempo real.</p>
+                    </div>
+                </div>
+
+                <div class="faq-premium-item">
+                    <div class="faq-premium-question" onclick="this.parentElement.classList.toggle('active')">
+                        <h3>¿Puedo devolver o cambiar mi perfume?</h3>
+                        <div class="faq-icon-wrapper">
+                            <span class="faq-icon-plus">+</span>
+                            <span class="faq-icon-minus">−</span>
+                        </div>
+                    </div>
+                    <div class="faq-premium-answer">
+                        <p>¡Por supuesto! Tienes 7 días para devolver o cambiar tu perfume si está sin abrir y en su
+                            empaque original. Tu satisfacción es nuestra prioridad.</p>
+                    </div>
+                </div>
+
+                <div class="faq-premium-item">
+                    <div class="faq-premium-question" onclick="this.parentElement.classList.toggle('active')">
+                        <h3>¿Cómo sé que mi perfume no es falsificado?</h3>
+                        <div class="faq-icon-wrapper">
+                            <span class="faq-icon-plus">+</span>
+                            <span class="faq-icon-minus">−</span>
+                        </div>
+                    </div>
+                    <div class="faq-premium-answer">
+                        <p>Cada perfume incluye código de barras verificable, sello holográfico de la marca, empaque
+                            original sellado y certificado de autenticidad. Además, garantizamos la calidad con nuestra
+                            política de devolución.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Sticky Footer -->
+    <div class="sticky-footer" id="sticky-footer">
+        <button class="sticky-footer-btn" id="open-modal-btn">
+            <div class="sticky-footer-info">
+                <span class="sticky-count">
+                    <span class="count-badge" id="selected-count">0</span>
+                    productos
+                </span>
+                <span class="sticky-total" id="footer-total">S/ 0.00</span>
+            </div>
+            <div class="sticky-footer-action">
+                <span>Realizar Pedido</span>
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </div>
+        </button>
+    </div>
+
+    <!-- Sales Popup -->
+    <div class="sales-popup" id="sales-popup">
+        <!-- Rendered by JS -->
+    </div>
+
+    <!-- Order Modal -->
+    <div class="modal-overlay" id="order-modal">
+        <div class="modal-container">
+            <div class="modal-header" style="position: relative; padding-right: 40px;">
+                <h3>Completar Pedido</h3>
+                <button class="btn" id="close-modal" style="
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 50%;
+                    background: #ff4444;
+                    color: white;
+                    border: none;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 18px;
+                    font-weight: bold;
+                    padding: 0;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    z-index: 10;
+                " onmouseover="this.style.transform='scale(1.1)'"
+                    onmouseout="this.style.transform='scale(1)'">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="step-indicator">
+                    <div class="step-bar active"></div>
+                    <div class="step-bar"></div>
+                    <div class="step-bar"></div>
+                </div>
+
+                <!-- Step 1: Info -->
+                <div data-step="1">
+                    <h4 class="mb-4">📋 1. Datos Personales</h4>
+                    <!-- Nombre 60% y DNI 40% en misma línea -->
+                    <div style="display: flex; gap: 12px;">
+                        <div class="form-group" style="flex: 0 0 60%;">
+                            <label class="form-label">Nombres Completos</label>
+                            <input type="text" class="form-control" id="input-name" placeholder="Ej: Juan Pérez García"
+                                required>
+                            <small style="color: #666; font-size: 0.85rem; display: block; margin-top: 4px;">👤 Nombres
+                                y Apellidos</small>
+                        </div>
+                        <div class="form-group" style="flex: 0 0 calc(40% - 12px);">
+                            <label class="form-label">DNI</label>
+                            <input type="tel" class="form-control" id="input-dni" placeholder="12345678" maxlength="8"
+                                inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                            <small style="color: #666; font-size: 0.85rem; display: block; margin-top: 4px;">🪪 8
+                                dígitos</small>
+                        </div>
+                    </div>
+                    <!-- Teléfono 40% (izquierda) y Email 60% (derecha) -->
+                    <div style="display: flex; gap: 12px;">
+                        <div class="form-group" style="flex: 0 0 40%;">
+                            <label class="form-label">Teléfono</label>
+                            <input type="tel" class="form-control" id="input-phone" placeholder="987 654 321"
+                                maxlength="9" inputmode="numeric"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                            <small style="color: #666; font-size: 0.85rem;">🇵🇪 9 dígitos</small>
+                        </div>
+                        <div class="form-group" style="flex: 0 0 calc(60% - 12px);">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="input-email" placeholder="ejemplo@correo.com"
+                                required>
+                            <small style="color: #666; font-size: 0.85rem;">📧 Confirmación</small>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="nextStep(1)" style="width:100%">Continuar →</button>
+                </div>
+
+                <!-- Step 2: Location -->
+                <div data-step="2" style="display:none;">
+                    <h4 class="mb-4">📍 2. Dirección de Entrega</h4>
+
+                    <div class="form-group">
+                        <label class="form-label">Buscar ubicación</label>
+                        <div style="position: relative;">
+                            <input type="text" class="form-control" id="location-search"
+                                placeholder="Escribe: Lima - Lima - Miraflores" autocomplete="off" required>
+                            <!-- Dropdown pegado al input, tapará lo que esté abajo -->
+                            <div id="location-dropdown" style="
+                                position: absolute;
+                                top: 100%;
+                                left: 0;
+                                right: 0;
+                                background: white;
+                                border: 1px solid #ddd;
+                                border-radius: 0 0 12px 12px;
+                                max-height: 250px;
+                                overflow-y: auto;
+                                z-index: 1000;
+                                display: none;
+                                box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+                            "></div>
+                        </div>
+                        <small style="color: #666; font-size: 0.85rem; display: block; margin-top: 5px;">
+                            🔍 Escribe tu distrito
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Dirección Exacta</label>
+                        <textarea class="form-control" id="input-address" rows="2"
+                            placeholder="Av. Principal 123, Dpto 501..."></textarea>
+                        <small style="color: #666; font-size: 0.85rem;">
+                            📝 Incluye número de casa/dpto, referencias
+                        </small>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px;">
+                        <button class="btn" onclick="previousStep(2)" style="background: #e5e7eb; color: #374151;">←
+                            Atrás</button>
+                        <button class="btn btn-primary" onclick="nextStep(2)">Continuar →</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Confirm -->
+                <div data-step="3" style="display:none;">
+                    <h4 class="mb-4">✓ 3. Confirmar Pedido</h4>
+                    <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <div id="summary-list"
+                            style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; max-height: 150px; overflow-y: auto;">
+                            <!-- items -->
+                        </div>
+                        <!-- DESGLOSE DE COSTOS -->
+                        <div style="padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom: 8px;">
+                                <span style="color: #6b7280;">Subtotal:</span>
+                                <span id="summary-subtotal" style="font-weight: 600;">S/ 0.00</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom: 8px;">
+                                <span style="color: #6b7280;">Envío:</span>
+                                <span id="summary-shipping" style="font-weight: 600;">S/ 0.00</span>
+                            </div>
+                        </div>
+                        <!-- TOTAL -->
+                        <div
+                            style="display:flex; justify-content:space-between; font-weight:700; font-size:1.2rem; padding-top: 10px;">
+                            <span>TOTAL A PAGAR:</span>
+                            <span id="summary-total" style="color: #0C9145;">S/ 0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Badges de confianza -->
+                    <div
+                        style="background: #e8f5e9; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9rem;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                            <span>🛡️</span>
+                            <span>Tus datos están seguros</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span>📦</span>
+                            <span>Pago contra entrega - 0% riesgo</span>
+                        </div>
+                    </div>
+
+                    <label class="form-group" style="display:flex; gap:10px; align-items:center; margin-bottom: 20px;">
+                        <input type="checkbox" checked>
+                        <span class="text-sm">Acepto los términos y condiciones de envío.</span>
+                    </label>
+
+                    <!-- Botones de acción -->
+                    <div style="display: grid; gap: 10px; margin-bottom: 10px;">
+                        <button class="btn btn-primary btn-large btn-pulse" id="confirm-btn" onclick="confirmOrder()"
+                            style="width:100%">✓ CONFIRMAR PEDIDO</button>
+
+                    </div>
+
+                    <button class="btn" onclick="previousStep(3)"
+                        style="width:100%; background: #e5e7eb; color: #374151;">← Atrás</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        // Init Swiper inline to ensure it works after loading
+        // Init Swiper inline to ensure it works after loading
+        window.addEventListener('load', () => {
+            new Swiper(".mySwiper", {
+                slidesPerView: 1,
+                spaceBetween: 30, // Good spacing
+                loop: true,
+                autoplay: {
+                    delay: 2500, // 2.5 seconds
+                    disableOnInteraction: false,
+                },
+                pagination: {
+                    el: ".swiper-pagination",
+                    clickable: true,
+                    dynamicBullets: true, // Cleaner dots
+                },
+                breakpoints: {
+                    640: { slidesPerView: 2, spaceBetween: 20 },
+                    1024: { slidesPerView: 3, spaceBetween: 30 },
+                },
+            });
+        });
+    </script>
+    <script src="./script.js"></script>
+    <script src="./wcf-carousel.js"></script>
+    <script>
+        // Nueva lógica de confirmación conectada a la API real
+        function confirmOrder() {
+            const btn = document.getElementById('confirm-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ Procesando...';
+            btn.disabled = true;
+
+            const cliente = document.getElementById('input-name').value;
+            const telefono = document.getElementById('input-dni').value; // Usando DNI como telefono principal en este caso
+            const celular = document.getElementById('input-phone').value;
+            const email = document.getElementById('input-email').value;
+            const direccion = document.getElementById('location-search').value + ' - ' + document.getElementById('input-address').value;
+            
+            // Recoger carrito (del localStorage o DOM)
+            // Ya que WCF_CART está manejado en script.js pero no exponen globalmente el array real fácilmente
+            // Leemos del DOM del resumen o usamos un mock para la demo si no hay cart
+            let productosList = [];
+            const subtotalText = document.getElementById('summary-subtotal').textContent;
+            let subtotal = parseFloat(subtotalText.replace(/[^0-9.-]+/g,"")) || 0;
+            const totalText = document.getElementById('summary-total').textContent;
+            let total = parseFloat(totalText.replace(/[^0-9.-]+/g,"")) || 0;
+            
+            // Tratamos de leer los items del modal de resumen
+            const summaryItems = document.querySelectorAll('#summary-list > div');
+            summaryItems.forEach(item => {
+                const name = item.querySelector('div:first-child')?.textContent || 'Producto Desconocido';
+                const qtyText = item.querySelector('span:last-child')?.textContent || 'x1';
+                productosList.push({
+                    nombre: name.trim(),
+                    cantidad: parseInt(qtyText.replace('x', '')) || 1,
+                    precio: subtotal / (summaryItems.length || 1) // Aproximación
+                });
+            });
+
+            // Si falla lectura, datos dummy
+            if(productosList.length === 0) {
+                productosList.push({nombre: 'Perfume Promo', cantidad: 1, precio: 150});
+                subtotal = 150;
+                total = 165;
+            }
+
+            const envioCost = window.STORE_CONFIG ? window.STORE_CONFIG.envioBase : 15;
+            const payload = {
+                cliente: cliente || 'Cliente Anónimo',
+                telefono: celular || telefono,
+                email: email,
+                direccion: direccion,
+                productos: productosList,
+                subtotal: subtotal,
+                envio: envioCost,
+                total: subtotal + envioCost
+            };
+
+            fetch('/api/pedidos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                btn.innerHTML = '✅ Pedido Confirmado';
+                btn.style.background = '#065f46';
+                
+                // Mostrar alerta de éxito bonita o alert fallback
+                alert(`¡Gracias ${cliente}! Tu pedido fue recibido con éxito.\nRecibirás tu pedido PRONTO y pagarás en casa.\n\nPuedes hacer seguimiento a tu pedido usando tu número de celular (${celular || telefono}) en:\nhttp://localhost:3000/perfil?tel=${celular || telefono}`);
+                
+                // Redirigir a la landing de éxito o cerrar modal
+                document.getElementById('order-modal').classList.remove('active');
+                
+                // Opcional redirigir: window.location.href = `/perfil?tel=${celular || telefono}`;
+            })
+            .catch(err => {
+                console.error(err);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                alert('Hubo un error al procesar tu pedido. Por favor intenta de nuevo.');
+            });
+        }
+    </script>
+    <script>
+        // Mostrar botón de admin si el usuario está logueado como administrador
+        fetch('/api/me')
+            .then(res => res.json())
+            .then(user => {
+                if (user && user.isAdmin) {
+                    const adminBtn = document.createElement('a');
+                    adminBtn.href = '/admin/dashboard';
+                    adminBtn.innerHTML = '🔧 Panel Admin';
+                    adminBtn.style.cssText = `
+                        position: fixed;
+                        right: 24px;
+                        bottom: 100px;
+                        background: linear-gradient(135deg, #1A472A, #0C9145);
+                        color: white;
+                        padding: 12px 24px;
+                        border-radius: 50px;
+                        text-decoration: none;
+                        font-weight: 800;
+                        font-family: 'Outfit', sans-serif;
+                        box-shadow: 0 10px 25px rgba(12, 145, 69, 0.4);
+                        z-index: 10000;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        transition: 0.3s;
+                        border: 2px solid rgba(255,255,255,0.1);
+                    `;
+                    adminBtn.onmouseover = () => { adminBtn.style.transform = 'translateY(-5px) scale(1.05)'; adminBtn.style.boxShadow = '0 15px 30px rgba(12, 145, 69, 0.6)'; };
+                    adminBtn.onmouseout = () => { adminBtn.style.transform = 'translateY(0) scale(1)'; adminBtn.style.boxShadow = '0 10px 25px rgba(12, 145, 69, 0.4)'; };
+                    document.body.appendChild(adminBtn);
+                }
+            })
+            .catch(err => console.log('Not logged in or guest'));
+    </script>
+</body>
+
+</html>

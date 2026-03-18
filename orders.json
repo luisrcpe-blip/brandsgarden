@@ -1,0 +1,40 @@
+[
+  {
+    "id": 1001,
+    "cliente": "María García",
+    "telefono": "987654321",
+    "email": "maria@gmail.com",
+    "direccion": "Av. Arequipa 1200, Lima",
+    "productos": [
+      {
+        "nombre": "Hugo Boss Bottled 100ml",
+        "cantidad": 1,
+        "precio": 250
+      }
+    ],
+    "subtotal": 250,
+    "envio": 15,
+    "total": 265,
+    "estado": "Entregado",
+    "fecha": "2026-03-12"
+  },
+  {
+    "id": 1002,
+    "cliente": "Carlos Ríos",
+    "telefono": "912345678",
+    "email": "carlos@gmail.com",
+    "direccion": "Jr. Miraflores 450, Dpto 3B, Lima",
+    "productos": [
+      {
+        "nombre": "Dior Sauvage 60ml",
+        "cantidad": 1,
+        "precio": 290
+      }
+    ],
+    "subtotal": 290,
+    "envio": 15,
+    "total": 305,
+    "estado": "En camino",
+    "fecha": "2026-03-13"
+  }
+]

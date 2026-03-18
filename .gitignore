@@ -1,0 +1,10 @@
+# Base de datos (Carpetas protegidas)
+database/
+public/uploads/
+
+# Archivos temporales o logs
+*.log
+*.json.bak
+node_modules/
+.env
+.DS_Store

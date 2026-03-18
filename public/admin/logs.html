@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auditoría - Brandsgarden Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--green:#1A472A;--green-light:#e8f5e9;--green-mid:#0C9145;--text:#2d2d2d;--gray:#6b7280;--border:#e5e7eb;--bg:#f4f7f4}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+  .sidebar{position:fixed;top:0;left:0;height:100vh;width:220px;background:var(--green);display:flex;flex-direction:column;padding:24px 0;z-index:100}
+  .sidebar-logo{padding:0 24px 24px;border-bottom:1px solid rgba(255,255,255,.1)}
+  .sidebar-logo h2{font-family:'Outfit',sans-serif;color:#fff;font-size:1.3rem;font-weight:800}
+  .sidebar-logo p{color:rgba(255,255,255,.6);font-size:.75rem;margin-top:2px}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:12px 24px;color:rgba(255,255,255,.75);text-decoration:none;font-weight:500;font-size:.95rem;transition:.2s}
+  .nav-item:hover,.nav-item.active{background:rgba(255,255,255,.1);color:#fff}
+  .nav-item .icon{font-size:1.2rem;width:20px;text-align:center}
+  .nav-bottom{margin-top:auto;border-top:1px solid rgba(255,255,255,.1);padding-top:8px}
+  .main{margin-left:220px;padding:32px;min-height:100vh}
+  .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
+  .page-title{font-family:'Outfit',sans-serif;font-size:1.8rem;color:var(--green);font-weight:800}
+  .section{background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:.8rem;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;padding:0 12px 12px;border-bottom:2px solid var(--border)}
+  td{padding:14px 12px;border-bottom:1px solid var(--border);font-size:.9rem}
+  .log-action{font-weight:800; padding:4px 8px; border-radius:6px; font-size:0.75rem;}
+  .action-DELETE { background: #fee2e2; color: #dc2626; }
+  .action-EDIT { background: #fef3c7; color: #d97706; }
+  .action-CREATE { background: #dcfce7; color: #166534; }
+  .loading{text-align:center;color:var(--gray);padding:40px}
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <h2>🌿 Brandsgarden</h2>
+    <p>Seguridad de Datos</p>
+  </div>
+  <a class="nav-item" href="/admin/dashboard"><span class="icon">📊</span>Resumen</a>
+  <a class="nav-item" href="/admin/pedidos"><span class="icon">🛒</span>Pedidos</a>
+  <a class="nav-item" href="/admin/productos"><span class="icon">📦</span>Productos</a>
+  <a class="nav-item" href="/admin/clientes"><span class="icon">👥</span>Clientes</a>
+  <a class="nav-item active" href="/admin/logs"><span class="icon">📜</span>Auditoría</a>
+  <a class="nav-item" href="/admin/importador"><span class="icon">📥</span>Importador</a>
+  <a class="nav-item" href="/admin/configuracion"><span class="icon">⚙️</span>Configuración</a>
+  <div class="nav-bottom">
+    <a class="nav-item" href="/api/logout"><span class="icon">🚪</span>Cerrar sesión</a>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-header">
+    <h1 class="page-title">Registro de Actividad (Auditoría)</h1>
+    <p style="color:var(--gray); font-size:0.9rem;">Todas las acciones importantes quedan registradas aquí para tu seguridad.</p>
+  </div>
+  
+  <div class="section">
+    <div id="logs-container">
+      <div class="loading">Cargando historial...</div>
+    </div>
+  </div>
+</main>
+
+<script>
+  async function cargarLogs() {
+    const res = await fetch('/api/logs');
+    if (res.status === 401) { window.location.href = '/admin'; return; }
+    const logs = await res.json();
+    renderLogs(logs);
+  }
+
+  function renderLogs(logs) {
+    const container = document.getElementById('logs-container');
+    if (logs.length === 0) {
+      container.innerHTML = '<div class="loading">📭 No hay registros de actividad aún.</div>';
+      return;
+    }
+
+    const rows = logs.map(log => {
+      let actionClass = '';
+      if (log.accion.includes('ELIMINAR')) actionClass = 'action-DELETE';
+      if (log.accion.includes('EDITAR')) actionClass = 'action-EDIT';
+      if (log.accion.includes('CREAR')) actionClass = 'action-CREATE';
+
+      return `<tr>
+        <td><small>${log.fecha}</small></td>
+        <td><strong>${log.usuario}</strong><br><small style="color:var(--gray)">IP: ${log.ip}</small></td>
+        <td><span class="log-action ${actionClass}">${log.accion}</span></td>
+        <td><pre style="font-size:0.75rem; color:var(--gray); white-space: pre-wrap; font-family:monospace;">${JSON.stringify(log.detalles, null, 2)}</pre></td>
+      </tr>`;
+    }).join('');
+
+    container.innerHTML = `<table>
+      <thead>
+        <tr>
+          <th style="width:150px">Fecha</th>
+          <th style="width:200px">Usuario</th>
+          <th style="width:180px">Acción</th>
+          <th>Detalles (Backup de datos)</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
+
+  cargarLogs();
+</script>
+</body>
+</html>
