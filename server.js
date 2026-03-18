@@ -1,5 +1,6 @@
 const express = require('express');
 const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
 const path = require('path');
 const fs = require('fs');
 const pool = require('./db');
@@ -16,8 +17,12 @@ if (!fs.existsSync(uploadDir)) {
 // ─── MIDDLEWARE ───────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+const sessionStore = new MySQLStore({}, pool);
+
 app.use(session({
     secret: process.env.SESSION_SECRET || 'brandsgarden_secret',
+    store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 1000 * 60 * 60 * 8 } // 8 horas
@@ -70,7 +75,7 @@ app.post('/api/login', async (req, res) => {
             req.session.adminEmail = user.email;
             req.session.user = { email: user.email, isAdmin: !!user.is_admin };
             console.log("Login exitoso");
-            return res.json({ ok: true, redirect: '/perfumes/' });
+            return res.json({ ok: true, redirect: '/admin/dashboard' });
         }
         console.log("Credenciales inválidas");
         res.status(401).json({ ok: false, error: 'Credenciales inválidas' });
@@ -92,7 +97,7 @@ app.post('/api/register', async (req, res) => {
         req.session.isAdmin = false;
         req.session.adminEmail = email;
         req.session.user = { email, isAdmin: false };
-        res.status(201).json({ ok: true, redirect: '/perfumes/' });
+        res.status(201).json({ ok: true, redirect: '/admin/dashboard' });
     } catch (e) {
         res.status(500).json({ error: 'Error en registro' });
     }
