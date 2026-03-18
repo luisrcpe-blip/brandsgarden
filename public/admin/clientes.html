@@ -37,6 +37,10 @@
   .badge-gastado{background:#d1fae5;color:#065f46;padding:4px 10px;border-radius:8px;font-weight:700;}
   .badge-pedidos{background:#f3f4f6;color:#374151;padding:4px 10px;border-radius:8px;font-weight:700;}
 
+  /* MOBILE TOGGLE */
+  .mobile-toggle { display: none; position: fixed; top: 50%; left: 0; transform: translateY(-50%); background: var(--green); color: #fff; border: none; padding: 12px 8px; border-radius: 0 8px 8px 0; box-shadow: 2px 0 8px rgba(0,0,0,.3); z-index: 200; cursor: pointer; font-size: 1.2rem; }
+  @media (max-width: 900px) { .mobile-toggle { display: block; } #close-menu-btn { display: block !important; } }
+
   /* RESPONSIVE */
   @media (max-width: 900px) {
     .sidebar-admin { transform: translateX(-100%); width: 260px; z-index: 300 }
@@ -50,6 +54,7 @@
 <body>
 
 <!-- SIDEBAR -->
+<button class="mobile-toggle" onclick="document.getElementById('sidebar').classList.add('open')">❯</button>
 <aside class="sidebar-admin" id="sidebar">
   <div class="sidebar-logo">
     <div style="display:flex;align-items:center;justify-content:space-between">
@@ -61,7 +66,7 @@
   <a class="nav-item" href="/admin/dashboard"><span class="icon">📊</span>Resumen</a>
   <a class="nav-item" href="/admin/pedidos"><span class="icon">🛒</span>Pedidos</a>
   <a class="nav-item" href="/admin/productos"><span class="icon">📦</span>Productos</a>
-  <a class="nav-item active" href="/admin/clientes"><span class="icon">👥</span>Clientes</a>
+  <a class="nav-item active" href="/admin/clientes"><span class="icon">👥</span>Usuarios</a>
   <a class="nav-item" href="/admin/configuracion"><span class="icon">⚙️</span>Configuración</a>
   <div class="nav-bottom">
     <a class="nav-item" href="/admin/logout"><span class="icon">🚪</span>Cerrar sesión</a>
@@ -74,62 +79,130 @@
     <div style="display:flex;align-items:center;gap:16px">
       <button onclick="document.getElementById('sidebar').classList.add('open')" style="display:none;background:none;border:none;font-size:1.5rem;cursor:pointer" id="menu-btn">☰</button>
       <div>
-        <h1 class="page-title">Directorio de Clientes</h1>
-        <p style="color:var(--gray);font-size:0.9rem;margin-top:4px;">Historial de compradores y gasto acumulado</p>
+        <h1 class="page-title">Directorio de Usuarios</h1>
+        <p style="color:var(--gray);font-size:0.9rem;margin-top:4px;">Gestiona el acceso y roles de los usuarios</p>
       </div>
+    </div>
+    <div style="display:flex; gap:12px; align-items:center;">
+      <button onclick="openModal()" style="background:linear-gradient(135deg,#0C9145,#1A472A);color:#fff;border:none;border-radius:12px;padding:12px 22px;font-size:.95rem;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;transition:.2s">+ Nuevo</button>
     </div>
   </div>
 
   <div class="section">
-    <div id="clientes-container"><div class="loading">⏳ Cargando clientes...</div></div>
+    <div id="clientes-container"><div class="loading">⏳ Cargando usuarios...</div></div>
   </div>
 </main>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="closeModalOutside(event)" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center">
+  <div class="modal" style="background:#fff;border-radius:20px;padding:32px;width:100%;max-width:400px;box-shadow:0 20px 50px rgba(0,0,0,.2)">
+    <h3 id="modal-title" style="font-family:'Outfit',sans-serif;color:var(--green);font-size:1.3rem;font-weight:800;margin-bottom:20px">Nuevo Usuario</h3>
+    <div class="form-group" style="margin-bottom:16px">
+      <label style="display:block;font-weight:600;font-size:.85rem;color:#374151;margin-bottom:5px">Correo Electrónico</label>
+      <input type="email" id="f-email" placeholder="Ej: admin@tienda.com" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:10px;font-size:.95rem;font-family:'DM Sans',sans-serif;outline:none">
+    </div>
+    <div class="form-group" style="margin-bottom:16px">
+      <label style="display:block;font-weight:600;font-size:.85rem;color:#374151;margin-bottom:5px">Contraseña</label>
+      <input type="password" id="f-password" placeholder="Mínimo 6 caracteres" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:10px;font-size:.95rem;font-family:'DM Sans',sans-serif;outline:none">
+    </div>
+    <div class="form-group" style="margin-bottom:16px">
+      <label style="display:block;font-weight:600;font-size:.85rem;color:#374151;margin-bottom:5px">Rol</label>
+      <select id="f-rol" style="width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:10px;font-size:.95rem;font-family:'DM Sans',sans-serif;outline:none">
+        <option value="administrador">Administrador</option>
+        <option value="cliente">Cliente</option>
+      </select>
+    </div>
+    <div class="modal-btns" style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn-cancel" onclick="closeModal()" style="flex:1;padding:12px;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;font-size:.95rem">Cancelar</button>
+      <button class="btn-save" onclick="guardarUsuario()" style="flex:1;padding:12px;background:linear-gradient(135deg,#0C9145,#1A472A);color:#fff;border:none;border-radius:10px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;font-size:.95rem">Guardar ✓</button>
+    </div>
+  </div>
+</div>
 
 <script>
   if(window.innerWidth <= 900) { 
     document.getElementById('menu-btn').style.display = 'block'; 
-    document.getElementById('close-menu-btn').style.display = 'block';
+    if(document.getElementById('close-menu-btn')) document.getElementById('close-menu-btn').style.display = 'block';
   }
 
-  async function cargarClientes() {
+  async function cargarUsuarios() {
     try {
-      const res = await fetch('/api/clientes');
+      const res = await fetch('/api/usuarios');
       if (res.status === 401) { window.location.href = '/admin'; return; }
       
-      const clientes = await res.json();
+      const usuarios = await res.json();
       const container = document.getElementById('clientes-container');
       
-      if (clientes.length === 0) {
-        container.innerHTML = '<div class="loading">📭 Aún no tienes clientes registrados.</div>';
+      if (usuarios.length === 0) {
+        container.innerHTML = '<div class="loading">📭 Aún no hay usuarios registrados.</div>';
         return;
       }
-      
-      // Ordenar por total gastado (los mejores clientes primero)
-      clientes.sort((a,b) => b.totalGastado - a.totalGastado);
 
-      const rows = clientes.map(c => `
+      const rows = usuarios.map(u => `
         <tr>
           <td>
-            <strong>${c.nombre}</strong><br>
-            <span style="color:var(--gray);font-size:0.8rem">${c.email || 'Sin correo'}</span>
+            <strong>${u.email}</strong>
           </td>
-          <td>${c.telefono}</td>
-          <td><span class="badge-pedidos">${c.numeroPedidos} pedidos</span></td>
-          <td><span class="badge-gastado">S/ ${parseFloat(c.totalGastado).toFixed(2)}</span></td>
-          <td style="color:var(--gray);font-size:0.85rem">${c.ultimoPedido}</td>
+          <td><span class="${u.is_admin ? 'badge-gastado' : 'badge-pedidos'}">${u.is_admin ? 'Administrador' : 'Cliente'}</span></td>
+          <td>
+            <button onclick="eliminarUsuario(${u.id})" style="padding:6px 14px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;background:#fee2e2;color:#dc2626;transition:.2s">🗑️ Eliminar</button>
+          </td>
         </tr>
       `).join('');
       
       container.innerHTML = `<div class="table-container"><table>
-        <thead><tr><th>Cliente</th><th>Teléfono / DNI</th><th>Total Pedidos</th><th>LTV (Gastado)</th><th>Última Compra</th></tr></thead>
+        <thead><tr><th>Correo Electrónico</th><th>Rol</th><th>Acciones</th></tr></thead>
         <tbody>${rows}</tbody>
       </table></div>`;
     } catch(err) {
-      document.getElementById('clientes-container').innerHTML = '<div class="loading" style="color:red">Error al cargar clientes</div>';
+      document.getElementById('clientes-container').innerHTML = '<div class="loading" style="color:red">Error al cargar usuarios</div>';
     }
   }
 
-  cargarClientes();
+  function openModal() {
+    document.getElementById('f-email').value = '';
+    document.getElementById('f-password').value = '';
+    document.getElementById('f-rol').value = 'cliente';
+    document.getElementById('overlay').style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('overlay').style.display = 'none';
+  }
+
+  function closeModalOutside(e) {
+    if(e.target === document.getElementById('overlay')) closeModal();
+  }
+
+  async function guardarUsuario() {
+    const email = document.getElementById('f-email').value;
+    const password = document.getElementById('f-password').value;
+    const rol = document.getElementById('f-rol').value;
+    
+    if (!email || !password) return alert('Completa todos los campos');
+
+    const res = await fetch('/api/usuarios', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, rol })
+    });
+    
+    if (res.ok) {
+      closeModal();
+      cargarUsuarios();
+    } else {
+      const err = await res.json();
+      alert(err.error || 'Error al guardar');
+    }
+  }
+
+  async function eliminarUsuario(id) {
+    if (!confirm('¿Seguro que deseas eliminar este usuario?')) return;
+    await fetch('/api/usuarios/' + id, { method: 'DELETE' });
+    cargarUsuarios();
+  }
+
+  cargarUsuarios();
 </script>
 </body>
 </html>

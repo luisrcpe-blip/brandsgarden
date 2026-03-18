@@ -129,6 +129,43 @@ app.get('/api/debug-env', (req, res) => {
     });
 });
 
+// ─── API: USUARIOS (Admin User Management) ───────────────
+app.get('/api/usuarios', requireAdmin, async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT id, email, is_admin FROM usuarios ORDER BY id DESC');
+        res.json(rows);
+    } catch (e) {
+        res.status(500).json([]);
+    }
+});
+
+app.post('/api/usuarios', requireAdmin, async (req, res) => {
+    const { email, password, rol } = req.body;
+    if (!email || !password) return res.status(400).json({ error: 'Datos incompletos' });
+    try {
+        const [exists] = await pool.query('SELECT email FROM usuarios WHERE email = ?', [email]);
+        if (exists.length > 0) return res.status(400).json({ error: 'El usuario ya existe' });
+        
+        const is_admin = rol === 'administrador';
+        const [result] = await pool.query('INSERT INTO usuarios (email, password, is_admin) VALUES (?, ?, ?)', [email, password, is_admin ? 1 : 0]);
+        await addLog(req, 'CREAR_USUARIO', { id: result.insertId, email, is_admin });
+        res.status(201).json({ id: result.insertId, email, is_admin: is_admin ? 1 : 0 });
+    } catch (e) {
+        res.status(500).json({ error: 'Error al crear usuario' });
+    }
+});
+
+app.delete('/api/usuarios/:id', requireAdmin, async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        await addLog(req, 'ELIMINAR_USUARIO', { id });
+        await pool.query('DELETE FROM usuarios WHERE id = ?', [id]);
+        res.json({ ok: true });
+    } catch (e) {
+        res.status(500).json({ error: 'Error al eliminar usuario' });
+    }
+});
+
 // ─── API: PRODUCTOS (WooCommerce Compat & Admin) ──────────
 app.get('/wp-json/wc/store/products', async (req, res) => {
     try {

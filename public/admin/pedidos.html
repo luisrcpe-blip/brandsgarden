@@ -9,6 +9,10 @@
   *{margin:0;padding:0;box-sizing:border-box}
   :root{--green:#1A472A;--green-light:#e8f5e9;--text:#2d2d2d;--gray:#6b7280;--border:#e5e7eb;--bg:#f4f7f4}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+  /* MOBILE TOGGLE */
+  .mobile-toggle { display: none; position: fixed; top: 50%; left: 0; transform: translateY(-50%); background: var(--green); color: #fff; border: none; padding: 12px 8px; border-radius: 0 8px 8px 0; box-shadow: 2px 0 8px rgba(0,0,0,.3); z-index: 200; cursor: pointer; font-size: 1.2rem; }
+  @media (max-width: 900px) { .mobile-toggle { display: block; } #close-menu-btn { display: block !important; } }
+
   /* SIDEBAR */
   .sidebar-admin{position:fixed;top:0;left:0;height:100vh;width:220px;background:var(--green);display:flex;flex-direction:column;padding:24px 0;z-index:100}
   .sidebar-logo{padding:0 24px 24px;border-bottom:1px solid rgba(255,255,255,.1)}
@@ -29,6 +33,7 @@
 </head>
 <body>
 <!-- SIDEBAR -->
+<button class="mobile-toggle" onclick="document.getElementById('sidebar').classList.add('open')">❯</button>
 <aside class="sidebar-admin" id="sidebar">
   <div class="sidebar-logo">
     <div style="display:flex;align-items:center;justify-content:space-between">
@@ -40,7 +45,7 @@
   <a class="nav-item" href="/admin/dashboard"><span class="icon">📊</span>Resumen</a>
   <a class="nav-item active" href="/admin/pedidos"><span class="icon">🛒</span>Pedidos</a>
   <a class="nav-item" href="/admin/productos"><span class="icon">📦</span>Productos</a>
-  <a class="nav-item" href="/admin/clientes"><span class="icon">👥</span>Clientes</a>
+  <a class="nav-item" href="/admin/clientes"><span class="icon">👥</span>Usuarios</a>
   <a class="nav-item" href="/admin/configuracion"><span class="icon">⚙️</span>Configuración</a>
   <div class="nav-bottom">
     <a class="nav-item" href="/admin/logout"><span class="icon">🚪</span>Cerrar sesión</a>
