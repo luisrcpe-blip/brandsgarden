@@ -61,8 +61,8 @@
   .btn-close{width:100%;margin-top:20px;padding:12px;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;font-size:.95rem}
 
   /* MOBILE TOGGLE */
-  .mobile-toggle { display: none; position: fixed; top: 50%; left: 0; transform: translateY(-50%); background: var(--green); color: #fff; border: none; padding: 12px 8px; border-radius: 0 8px 8px 0; box-shadow: 2px 0 8px rgba(0,0,0,.3); z-index: 200; cursor: pointer; font-size: 1.2rem; }
-  @media (max-width: 900px) { .mobile-toggle { display: block; } #close-menu-btn { display: block !important; } }
+  .mobile-toggle { display: none; position: fixed; top: 50%; left: 0; transform: translateY(-50%); background: var(--green); color: #fff; border: none; padding: 0; width: 44px; height: 44px; border-radius: 0 8px 8px 0; box-shadow: 2px 0 8px rgba(0,0,0,.3); z-index: 200; cursor: pointer; font-size: 1.2rem; align-items: center; justify-content: center; }
+  @media (max-width: 900px) { .mobile-toggle { display: flex; } #close-menu-btn { display: block !important; } }
 
   /* RESPONSIVE */
   @media (max-width: 900px) {
@@ -79,14 +79,14 @@
 <body>
 
 <!-- SIDEBAR -->
-<button class="mobile-toggle" onclick="document.getElementById('sidebar').classList.add('open')">❯</button>
+<button class="mobile-toggle" id="mobile-toggle" onclick="document.getElementById('sidebar').classList.add('open'); this.style.display='none'">❯</button>
 <aside class="sidebar-admin" id="sidebar">
-  <div class="sidebar-logo">
-    <div style="display:flex;align-items:center;justify-content:space-between">
+  <div class="sidebar-logo" style="position:relative; padding-top:20px;">
+    <button onclick="document.getElementById('sidebar').classList.remove('open'); document.getElementById('mobile-toggle').style.display='';" style="position:absolute;top:10px;right:-10px;background:none;border:none;color:#fff;font-size:1.6rem;cursor:pointer;display:none;padding:5px;z-index:10" id="close-menu-btn">✖</button>
+    <div style="display:flex;align-items:center;">
       <h2>🌿 Brandsgarden</h2>
-      <button onclick="document.getElementById('sidebar').classList.remove('open')" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;display:none" id="close-menu-btn">✖</button>
     </div>
-    <p>Panel Administrativo</p>
+    <p style="margin-top:8px">Panel Administrativo</p>
   </div>
   <a class="nav-item active" href="/admin/dashboard"><span class="icon">📊</span>Resumen</a>
   <a class="nav-item" href="/admin/pedidos"><span class="icon">🛒</span>Pedidos</a>

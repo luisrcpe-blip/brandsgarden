@@ -49,8 +49,13 @@
   .btn-save{flex:1;padding:12px;background:linear-gradient(135deg,#0C9145,#1A472A);color:#fff;border:none;border-radius:10px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;font-size:.95rem}
   .btn-cancel{flex:1;padding:12px;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;font-size:.95rem}
   /* MOBILE TOGGLE */
-  .mobile-toggle { display: none; position: fixed; top: 50%; left: 0; transform: translateY(-50%); background: var(--green); color: #fff; border: none; padding: 12px 8px; border-radius: 0 8px 8px 0; box-shadow: 2px 0 8px rgba(0,0,0,.3); z-index: 200; cursor: pointer; font-size: 1.2rem; }
-  @media (max-width: 900px) { .mobile-toggle { display: block; } #close-menu-btn { display: block !important; } }
+  .mobile-toggle { display: none; position: fixed; top: 50%; left: 0; transform: translateY(-50%); background: var(--green); color: #fff; border: none; padding: 0; width: 44px; height: 44px; border-radius: 0 8px 8px 0; box-shadow: 2px 0 8px rgba(0,0,0,.3); z-index: 200; cursor: pointer; font-size: 1.2rem; align-items: center; justify-content: center; }
+  @media (max-width: 900px) { .mobile-toggle { display: flex; } #close-menu-btn { display: block !important; } }
+  /* CSV MODAL */
+  .import-step { display: none; }
+  .import-step.active { display: block; }
+  .file-drop-area { border: 2px dashed var(--green); border-radius: 12px; padding: 30px; text-align: center; cursor: pointer; background: var(--green-light); transition: 0.2s; }
+  .file-drop-area:hover { background: #dcfce7; }
 
   /* RESPONSIVE */
   @media (max-width: 900px) {
@@ -68,14 +73,14 @@
 <body>
 
 <!-- SIDEBAR -->
-<button class="mobile-toggle" onclick="document.getElementById('sidebar').classList.add('open')">❯</button>
+<button class="mobile-toggle" id="mobile-toggle" onclick="document.getElementById('sidebar').classList.add('open'); this.style.display='none'">❯</button>
 <aside class="sidebar-admin" id="sidebar">
-  <div class="sidebar-logo">
-    <div style="display:flex;align-items:center;justify-content:space-between">
+  <div class="sidebar-logo" style="position:relative; padding-top:20px;">
+    <button onclick="document.getElementById('sidebar').classList.remove('open'); document.getElementById('mobile-toggle').style.display='';" style="position:absolute;top:10px;right:-10px;background:none;border:none;color:#fff;font-size:1.6rem;cursor:pointer;display:none;padding:5px;z-index:10" id="close-menu-btn">✖</button>
+    <div style="display:flex;align-items:center;">
       <h2>🌿 Brandsgarden</h2>
-      <button onclick="document.getElementById('sidebar').classList.remove('open')" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;display:none" id="close-menu-btn">✖</button>
     </div>
-    <p>Panel Administrativo</p>
+    <p style="margin-top:8px">Panel Administrativo</p>
   </div>
   <a class="nav-item" href="/admin/dashboard"><span class="icon">📊</span>Resumen</a>
   <a class="nav-item" href="/admin/pedidos"><span class="icon">🛒</span>Pedidos</a>
@@ -112,6 +117,7 @@
         <option value="stock-asc">Stock (Menor a Mayor)</option>
         <option value="stock-desc">Stock (Mayor a Menor)</option>
       </select>
+      <button class="btn-add" style="background:var(--green);color:#fff;" onclick="openCsvModal()">📥 Importar CSV</button>
       <button class="btn-add" onclick="openModal()">+ Nuevo</button>
     </div>
   </div>
@@ -192,6 +198,39 @@
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeGallery()">Cerrar Galería</button>
     </div>
+  </div>
+</div>
+
+<!-- MODAL IMPORTAR CSV -->
+<div class="overlay" id="csv-overlay" onclick="closeCsvOutside(event)">
+  <div class="modal">
+    <h3 id="csv-modal-title">Importar Productos desde WooCommerce</h3>
+    
+    <div id="csv-step-1" class="import-step active">
+      <p style="color:var(--gray);font-size:0.9rem;margin-bottom:15px">Sube el archivo <b>.csv</b> exportado desde WooCommerce. Detectaremos y mapearemos las columnas automáticamente.</p>
+      <div class="file-drop-area" onclick="document.getElementById('csv-file').click()">
+        <div style="font-size:2rem;margin-bottom:10px">📄</div>
+        <strong style="color:var(--green)">Haz clic para seleccionar el archivo CSV</strong>
+        <p style="font-size:0.8rem;color:var(--gray);margin-top:5px" id="csv-file-name">Ningún archivo seleccionado</p>
+      </div>
+      <input type="file" id="csv-file" accept=".csv" style="display:none" onchange="handleCsvSelect(event)">
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeCsvModal()">Cancelar</button>
+        <button class="btn-save" id="btn-parse-csv" onclick="procesarCsv()" disabled>Siguiente 👉</button>
+      </div>
+    </div>
+
+    <div id="csv-step-2" class="import-step">
+      <p style="color:var(--gray);font-size:0.9rem;margin-bottom:15px">Revisión de columnas:</p>
+      <div style="background:#f8f9fa;padding:15px;border-radius:10px;border:1px solid var(--border);margin-bottom:20px;">
+        <p id="csv-preview-text" style="font-weight:600;color:var(--green);">⏳ Analizando...</p>
+      </div>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="document.getElementById('csv-step-2').classList.remove('active'); document.getElementById('csv-step-1').classList.add('active');">Atrás</button>
+        <button class="btn-save" id="btn-confirm-import" onclick="confirmarImportacion()">Importar ✓</button>
+      </div>
+    </div>
+    
   </div>
 </div>
 
@@ -435,6 +474,125 @@ function uploadImageDirect(e) {
     }
   };
   e.target.value = '';
+}
+// --- LOGICA CSV IMPORTADOR ---
+let csvDataToImport = [];
+
+function openCsvModal() {
+  document.getElementById('csv-overlay').classList.add('open');
+  document.getElementById('csv-step-1').classList.add('active');
+  document.getElementById('csv-step-2').classList.remove('active');
+  document.getElementById('csv-file').value = '';
+  document.getElementById('csv-file-name').textContent = 'Ningún archivo seleccionado';
+  document.getElementById('btn-parse-csv').disabled = true;
+  csvDataToImport = [];
+}
+
+function closeCsvModal() { document.getElementById('csv-overlay').classList.remove('open'); }
+function closeCsvOutside(e) { if(e.target === document.getElementById('csv-overlay')) closeCsvModal(); }
+
+function handleCsvSelect(e) {
+  const file = e.target.files[0];
+  if(file) {
+    document.getElementById('csv-file-name').textContent = file.name;
+    document.getElementById('btn-parse-csv').disabled = false;
+  }
+}
+
+function parseCSVLine(text) {
+    let result = [];
+    let row = [];
+    let inQuotes = false;
+    let col = '';
+    for (let i = 0; i < text.length; i++) {
+        let c = text[i];
+        if (c === '"' && text[i+1] === '"') { col += '"'; i++; }
+        else if (c === '"') { inQuotes = !inQuotes; }
+        else if (c === ',' && !inQuotes) { row.push(col); col = ''; }
+        else if (c === '\n' && !inQuotes) { row.push(col); result.push(row); row = []; col = ''; }
+        else if (c !== '\r') { col += c; }
+    }
+    if (col) row.push(col);
+    if (row.length > 0) result.push(row);
+    return result;
+}
+
+async function procesarCsv() {
+  const file = document.getElementById('csv-file').files[0];
+  if(!file) return;
+
+  document.getElementById('btn-parse-csv').textContent = 'Procesando...';
+  document.getElementById('btn-parse-csv').disabled = true;
+
+  const text = await file.text();
+  const lines = parseCSVLine(text);
+  
+  if(lines.length < 2) {
+    alert("El archivo CSV está vacío o es inválido.");
+    openCsvModal(); return;
+  }
+
+  const headers = lines[0].map(h => h.trim().toLowerCase());
+  const parsedProducts = lines.slice(1).map(line => {
+      const obj = {};
+      headers.forEach((h, i) => { obj[h] = line[i] !== undefined ? line[i].trim() : ''; });
+      return obj;
+  }).filter(row => Object.keys(row).length > 0 && row[headers[0]] !== undefined && row[headers[0]] !== '');
+
+  csvDataToImport = parsedProducts.map(p => {
+      let cat = p['categories'] || p['categorías'] || 'General';
+      if(cat.includes(',')) cat = cat.split(',')[0].trim();
+      if(cat.includes('>')) cat = cat.split('>').pop().trim();
+
+      let img = p['images'] || p['imágenes'] || '';
+      if(img.includes(',')) img = img.split(',')[0].trim();
+
+      const price = parseFloat(p['sale price'] || p['precio rebajado'] || p['regular price'] || p['precio normal']) || 0;
+
+      return {
+          id: null,
+          sku: p['sku'] || '',
+          nombre: p['name'] || p['nombre'] || 'Producto sin nombre',
+          categoria: cat,
+          stock: parseInt(p['stock'] || p['inventario']) || 0,
+          precio: price,
+          descCorta: p['short description'] || p['descripción corta'] || '',
+          descripcion: p['description'] || p['descripción'] || '',
+          imagen: img
+      };
+  }).filter(p => p.nombre !== 'Producto sin nombre');
+
+  document.getElementById('csv-step-1').classList.remove('active');
+  document.getElementById('csv-step-2').classList.add('active');
+  document.getElementById('btn-parse-csv').textContent = 'Siguiente 👉';
+  document.getElementById('csv-preview-text').innerHTML = `✅ Validación exitosa.<br><br>Se encontraron <b>${csvDataToImport.length}</b> productos listos para importar.`;
+}
+
+async function confirmarImportacion() {
+  const btn = document.getElementById('btn-confirm-import');
+  btn.textContent = 'Importando...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/productos/import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(csvDataToImport)
+    });
+    
+    if (res.ok) {
+      closeCsvModal();
+      alert(`¡Éxito! Se importaron ${csvDataToImport.length} productos.`);
+      cargarProductos();
+    } else {
+      alert('Hubo un error en el servidor al guardar la importación.');
+    }
+  } catch(e) {
+    alert('Error de conexión.');
+  } finally {
+    btn.textContent = 'Importar ✓';
+    btn.disabled = false;
+  }
 }
 
 
