@@ -316,7 +316,7 @@ app.all('/wp-admin/admin-ajax.php', async (req, res) => {
             const envio = parseFloat(shipping_total) || 15;
 
             const [result] = await pool.query(
-                'INSERT INTO pedidos (cliente, dni, telefono, email, direccion, distrito, departmento, subtotal, envio, total, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                'INSERT INTO pedidos (cliente, dni, telefono, email, direccion, distrito, departamento, subtotal, envio, total, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 [first_name, dni || '', phone, email || '', address || '', district || '', department || '', subtotal, envio, subtotal + envio, 'Preparando']
             );
 
