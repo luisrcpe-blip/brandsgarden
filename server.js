@@ -103,9 +103,9 @@ app.get('/api/me', (req, res) => {
     res.status(401).json({ error: 'No logueado' });
 });
 
-app.get('/api/logout', (req, res) => {
+app.get(['/api/logout', '/admin/logout'], (req, res) => {
     req.session.destroy();
-    res.redirect('/admin');
+    res.redirect('/');
 });
 
 app.get('/api/debug-env', (req, res) => {
