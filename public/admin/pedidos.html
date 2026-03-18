@@ -9,11 +9,15 @@
   *{margin:0;padding:0;box-sizing:border-box}
   :root{--green:#1A472A;--green-light:#e8f5e9;--text:#2d2d2d;--gray:#6b7280;--border:#e5e7eb;--bg:#f4f7f4}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
-  .sidebar{position:fixed;top:0;left:0;height:100vh;width:220px;background:var(--green);display:flex;flex-direction:column;padding:24px 0;z-index:100}
+  /* SIDEBAR */
+  .sidebar-admin{position:fixed;top:0;left:0;height:100vh;width:220px;background:var(--green);display:flex;flex-direction:column;padding:24px 0;z-index:100}
   .sidebar-logo{padding:0 24px 24px;border-bottom:1px solid rgba(255,255,255,.1)}
   .sidebar-logo h2{font-family:'Outfit',sans-serif;color:#fff;font-size:1.3rem;font-weight:800}
-  .nav-item{display:flex;align-items:center;gap:12px;padding:12px 24px;color:rgba(255,255,255,.75);text-decoration:none;font-weight:500;font-size:.95rem;transition:.2s}
+  .sidebar-logo p{color:rgba(255,255,255,.6);font-size:.75rem;margin-top:2px}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:12px 24px;color:rgba(255,255,255,.75);text-decoration:none;font-weight:500;font-size:.95rem;transition:.2s;cursor:pointer;border:none;background:none;width:100%;text-align:left}
   .nav-item:hover,.nav-item.active{background:rgba(255,255,255,.1);color:#fff}
+  .nav-item .icon{font-size:1.2rem;width:20px;text-align:center}
+  .nav-bottom{margin-top:auto;border-top:1px solid rgba(255,255,255,.1);padding-top:8px}
   .main{margin-left:220px;padding:32px;min-height:100vh}
   .page-title{font-family:'Outfit',sans-serif;font-size:1.8rem;color:var(--green);font-weight:800;margin-bottom:32px}
   .section{background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
@@ -24,14 +28,23 @@
 </style>
 </head>
 <body>
-<aside class="sidebar">
-  <div class="sidebar-logo"><h2>🌿 Brandsgarden</h2></div>
-  <a class="nav-item" href="/admin/dashboard">📊 Resumen</a>
-  <a class="nav-item active" href="/admin/pedidos">🛒 Pedidos</a>
-  <a class="nav-item" href="/admin/productos">📦 Productos</a>
-  <a class="nav-item" href="/admin/clientes">👥 Clientes</a>
-  <a class="nav-item" href="/admin/configuracion">⚙️ Configuración</a>
-  <div class="nav-bottom"><a class="nav-item" href="/admin/logout">🚪 Cerrar sesión</a></div>
+<!-- SIDEBAR -->
+<aside class="sidebar-admin" id="sidebar">
+  <div class="sidebar-logo">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <h2>🌿 Brandsgarden</h2>
+      <button onclick="document.getElementById('sidebar').classList.remove('open')" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;display:none" id="close-menu-btn">✖</button>
+    </div>
+    <p>Panel Administrativo</p>
+  </div>
+  <a class="nav-item" href="/admin/dashboard"><span class="icon">📊</span>Resumen</a>
+  <a class="nav-item active" href="/admin/pedidos"><span class="icon">🛒</span>Pedidos</a>
+  <a class="nav-item" href="/admin/productos"><span class="icon">📦</span>Productos</a>
+  <a class="nav-item" href="/admin/clientes"><span class="icon">👥</span>Clientes</a>
+  <a class="nav-item" href="/admin/configuracion"><span class="icon">⚙️</span>Configuración</a>
+  <div class="nav-bottom">
+    <a class="nav-item" href="/admin/logout"><span class="icon">🚪</span>Cerrar sesión</a>
+  </div>
 </aside>
 <main class="main">
   <h1 class="page-title">Gestión de Pedidos</h1>

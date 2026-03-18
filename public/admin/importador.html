@@ -15,16 +15,18 @@
         }
 
         /* Standard Sidebar Layout */
-        body { background: #f4f7f6; font-family: 'Inter', sans-serif; display: flex; color: #333; margin: 0; }
-        .sidebar { width: 260px; background: #2c3e50; height: 100vh; position: fixed; color: white; display: flex; flex-direction: column; }
-        .sidebar-header { padding: 30px 20px; font-size: 1.5rem; font-weight: 700; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .nav-menu { flex: 1; padding: 20px 0; }
-        .nav-item { display: flex; align-items: center; padding: 12px 25px; color: rgba(255,255,255,0.7); text-decoration: none; transition: 0.3s; }
-        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; border-left: 4px solid var(--accent); }
-        .nav-item .icon { margin-right: 15px; font-size: 1.2rem; }
-        .nav-bottom { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        body { font-family: 'DM Sans', sans-serif; display: flex; color: #333; margin: 0; }
+        
+        .sidebar-admin{position:fixed;top:0;left:0;height:100vh;width:220px;background:#1A472A;display:flex;flex-direction:column;padding:24px 0;z-index:100;transition:transform 0.3s}
+        .sidebar-logo{padding:0 24px 24px;border-bottom:1px solid rgba(255,255,255,.1)}
+        .sidebar-logo h2{font-family:'Outfit',sans-serif;color:#fff;font-size:1.3rem;font-weight:800; margin:0;}
+        .sidebar-logo p{color:rgba(255,255,255,.6);font-size:.75rem;margin-top:2px}
+        .nav-item{display:flex;align-items:center;gap:12px;padding:12px 24px;color:rgba(255,255,255,.75);text-decoration:none;font-weight:500;font-size:.95rem;transition:.2s;cursor:pointer;border:none;background:none;width:100%;text-align:left}
+        .nav-item:hover,.nav-item.active{background:rgba(255,255,255,.1);color:#fff}
+        .nav-item .icon{font-size:1.2rem;width:20px;text-align:center}
+        .nav-bottom{margin-top:auto;border-top:1px solid rgba(255,255,255,.1);padding-top:8px}
 
-        .main-content { margin-left: 260px; flex: 1; padding: 40px; }
+        .main-content { margin-left: 220px; flex: 1; padding: 40px; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
         h2 { margin-bottom: 20px; color: var(--primary); }
@@ -41,21 +43,23 @@
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="sidebar-header">Admin Panel</div>
-        <div class="nav-menu">
-            <a class="nav-item" href="/admin/dashboard"><span class="icon">📊</span>Resumen</a>
-            <a class="nav-item" href="/admin/pedidos"><span class="icon">🛒</span>Pedidos</a>
-            <a class="nav-item" href="/admin/productos"><span class="icon">📦</span>Productos</a>
-            <a class="nav-item" href="/admin/clientes"><span class="icon">👥</span>Clientes</a>
-            <a class="nav-item" href="/admin/logs"><span class="icon">📜</span>Auditoría</a>
-            <a class="nav-item" href="/admin/configuracion"><span class="icon">⚙️</span>Configuración</a>
-            <a class="nav-item active" href="/admin/importador"><span class="icon">📥</span>Importador</a>
+    <aside class="sidebar-admin" id="sidebar">
+      <div class="sidebar-logo">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <h2>🌿 Brandsgarden</h2>
+          <button onclick="document.getElementById('sidebar').classList.remove('open')" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;display:none" id="close-menu-btn">✖</button>
         </div>
-        <div class="nav-bottom">
-            <a class="nav-item" href="/admin/logout"><span class="icon">🚪</span>Cerrar sesión</a>
-        </div>
-    </div>
+        <p>Panel Administrativo</p>
+      </div>
+      <a class="nav-item" href="/admin/dashboard"><span class="icon">📊</span>Resumen</a>
+      <a class="nav-item" href="/admin/pedidos"><span class="icon">🛒</span>Pedidos</a>
+      <a class="nav-item" href="/admin/productos"><span class="icon">📦</span>Productos</a>
+      <a class="nav-item" href="/admin/clientes"><span class="icon">👥</span>Clientes</a>
+      <a class="nav-item" href="/admin/configuracion"><span class="icon">⚙️</span>Configuración</a>
+      <div class="nav-bottom">
+        <a class="nav-item" href="/admin/logout"><span class="icon">🚪</span>Cerrar sesión</a>
+      </div>
+    </aside>
 
     <div class="main-content">
         <div class="header">

@@ -10,7 +10,7 @@
   :root{--green:#1A472A;--green-light:#e8f5e9;--green-mid:#0C9145;--text:#2d2d2d;--gray:#6b7280;--border:#e5e7eb;--bg:#f4f7f4}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
   /* SIDEBAR */
-  .sidebar{position:fixed;top:0;left:0;height:100vh;width:220px;background:var(--green);display:flex;flex-direction:column;padding:24px 0;z-index:100}
+  .sidebar-admin{position:fixed;top:0;left:0;height:100vh;width:220px;background:var(--green);display:flex;flex-direction:column;padding:24px 0;z-index:100}
   .sidebar-logo{padding:0 24px 24px;border-bottom:1px solid rgba(255,255,255,.1)}
   .sidebar-logo h2{font-family:'Outfit',sans-serif;color:#fff;font-size:1.3rem;font-weight:800}
   .sidebar-logo p{color:rgba(255,255,255,.6);font-size:.75rem;margin-top:2px}
@@ -62,8 +62,8 @@
 
   /* RESPONSIVE */
   @media (max-width: 900px) {
-    .sidebar { transform: translateX(-100%); transition: transform 0.3s }
-    .sidebar.open { transform: translateX(0) }
+    .sidebar-admin { transform: translateX(-100%); transition: transform 0.3s }
+    .sidebar-admin.open { transform: translateX(0) }
     .main { margin-left: 0; padding: 20px }
     .cards { grid-template-columns: 1fr }
     /* Mobile Table Scroll */
@@ -75,7 +75,7 @@
 <body>
 
 <!-- SIDEBAR -->
-<aside class="sidebar" id="sidebar">
+<aside class="sidebar-admin" id="sidebar">
   <div class="sidebar-logo">
     <div style="display:flex;align-items:center;justify-content:space-between">
       <h2>🌿 Brandsgarden</h2>
